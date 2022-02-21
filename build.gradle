@@ -1,0 +1,160 @@
+plugins {
+  id 'java'
+  id 'application'
+
+  // To create a fat jar build/libs/javadoc-lookup-all.jar, run: ./gradlew shadowJar
+  id 'com.github.johnrengelman.shadow' version '7.1.2'
+
+  // Error Prone linter
+  id("net.ltgt.errorprone") version "2.0.2"
+
+  // Checker Framework pluggable type-checking
+  id 'org.checkerframework' version '0.6.8'
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation group: 'org.jsoup', name: 'jsoup', version: '1.14.3'
+  // Used by Jsoup, needed to avoid compilation warnings.
+  implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
+
+  implementation 'org.plumelib:plume-util:1.5.8'
+}
+
+application {
+  mainClass = 'org.plumelib.javadoclookup.CreateJavadocIndex'
+}
+
+/// Error Prone linter
+
+dependencies {
+  errorprone("com.google.errorprone:error_prone_core:2.11.0")
+}
+tasks.withType(JavaCompile).configureEach {
+  options.compilerArgs << "-Xlint:all,-processing" << "-Werror"
+  options.errorprone {
+    enabled = JavaVersion.current() != JavaVersion.VERSION_1_8
+    // disable("ReferenceEquality") // Use Interning Checker instead.
+  }
+}
+
+/// Checker Framework pluggable type-checking
+
+apply plugin: 'org.checkerframework'
+
+checkerFramework {
+  checkers = [
+    'org.checkerframework.checker.formatter.FormatterChecker',
+    'org.checkerframework.checker.index.IndexChecker',
+    'org.checkerframework.checker.interning.InterningChecker',
+    'org.checkerframework.checker.lock.LockChecker',
+    'org.checkerframework.checker.nullness.NullnessChecker',
+    'org.checkerframework.checker.regex.RegexChecker',
+    'org.checkerframework.checker.signature.SignatureChecker',
+    'org.checkerframework.common.initializedfields.InitializedFieldsChecker'
+  ]
+  extraJavacArgs = [
+    '-Werror',
+    '-AcheckPurityAnnotations',
+    '-ArequirePrefixInWarningSuppressions',
+    '-AwarnUnneededSuppressions',
+  ]
+}
+
+// To use a locally-built Checker Framework, run gradle with "-PcfLocal".
+if (project.hasProperty("cfLocal")) {
+  def cfHome = String.valueOf(System.getenv("CHECKERFRAMEWORK"))
+  dependencies {
+    compileOnly files(cfHome + "/checker/dist/checker-qual.jar")
+    testCompileOnly files(cfHome + "/checker/dist/checker-qual.jar")
+    checkerFramework files(cfHome + "/checker/dist/checker.jar")
+  }
+}
+
+/// Javadoc
+
+// Turn Javadoc warnings into errors.
+javadoc {
+  options.addStringOption('Xwerror', '-Xdoclint:all')
+  options.addStringOption('private', '-quiet')
+  if (JavaVersion.current().compareTo(org.gradle.api.JavaVersion.VERSION_1_9) >= 0) {
+      options.addStringOption("-release", "8");
+  }
+  doLast {
+    if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
+      ant.replaceregexp(match:"@import url\\('resources/fonts/dejavu.css'\\);\\s*", replace:'',
+	flags:'g', byline:true) {
+	fileset(dir: destinationDir)
+      }
+    }
+  }
+}
+check.dependsOn javadoc
+
+task javadocWeb(type: Javadoc) {
+  description "Upload API documentation to website."
+  source = sourceSets.main.allJava
+  destinationDir = file("/cse/web/research/plumelib/${project.name}/api")
+  classpath = project.sourceSets.main.compileClasspath
+  if (JavaVersion.current().compareTo(org.gradle.api.JavaVersion.VERSION_1_9) >= 0) {
+      options.addStringOption("-release", "8");
+  }
+  doLast {
+    if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
+      ant.replaceregexp(match:"@import url\\('resources/fonts/dejavu.css'\\);\\s*", replace:'',
+	flags:'g', byline:true) {
+	fileset(dir: destinationDir)
+      }
+    }
+  }
+}
+
+configurations {
+  requireJavadoc
+}
+dependencies {
+  requireJavadoc "org.plumelib:require-javadoc:1.0.2"
+}
+task requireJavadoc(type: JavaExec) {
+  description = 'Ensures that Javadoc documentation exists.'
+  mainClass = "org.plumelib.javadoc.RequireJavadoc"
+  classpath = configurations.requireJavadoc
+  args "src/main/java"
+}
+check.dependsOn requireJavadoc
+javadocWeb.dependsOn requireJavadoc
+
+task updateUserOptions(type: Javadoc, dependsOn: 'assemble') {
+  description "Updates printed documentation of command-line arguments."
+  source = sourceSets.main.allJava.files.sort()
+  classpath = project.sourceSets.main.compileClasspath
+  options.memberLevel = JavadocMemberLevel.PRIVATE
+  options.docletpath = project.sourceSets.main.runtimeClasspath as List
+  options.doclet = "org.plumelib.options.OptionsDoclet"
+  options.addStringOption("docfile", "${projectDir}/src/main/java/org/plumelib/javadoclookup/Lookup.java")
+  options.addStringOption("format", "javadoc")
+  options.addStringOption("i", "-quiet")
+  options.noTimestamp(false)
+  title = ""
+}
+
+/// Emacs support
+
+/* Make Emacs TAGS table */
+task tags(type: Exec) {
+  description "Run etags to create an Emacs TAGS table"
+  commandLine "bash", "-c", "find src/ -name '*.java' | sort | xargs etags"
+}
+
+
+/// Debugging support
+
+task printCompileClasspath {
+  description "Print the compile-time classpath"
+  doLast {
+    println sourceSets.main.compileClasspath.asPath
+  }
+}

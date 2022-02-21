@@ -1,0 +1,158 @@
+#!/usr/bin/env perl
+# Construct .javadoc-index.el file for javadoc-lookup (look up Java docs from Emacs).
+# Michael Ernst <mernst@cs.washington.edu>
+
+# Run like this:
+#  javadoc-index-to-alist > ~/.javadoc-index.el
+# With no arguments, it uses a default list from file ~/.javadoc-index-files .
+
+
+use strict;
+use English;
+$WARNING = 1;
+
+my $debug = 0;
+# $debug = 1;
+
+use File::Find;
+
+use FindBin qw($Bin);
+
+if (scalar(@ARGV) == 0) {
+  @ARGV = read_and_glob_files("$ENV{HOME}/.javadoc-index-files");
+  # print STDERR "ARGV (" . scalar(@ARGV) . " elements): @ARGV\n";
+}
+
+my $current_dir = `pwd`;
+chomp($current_dir);
+$current_dir = $current_dir . "/";
+
+print ";; For use by Emacs function javadoc-lookup.\n";
+# Not $PROGRAM_NAME because we aren't using the English module.
+print ";; Created by $0.\n";
+print ";; Command line: $0 @ARGV\n";
+
+my %refs = ();
+my %javadoc_ignored_prefixes = ();
+
+my $sort_sublists = 0;          # enable for debugging
+
+for my $file (@ARGV) {
+  if (! -e $file) {
+    print STDERR "Didn't find $file\n";
+    next;
+  }
+  # No need to run javadoc-escape-anchors on the index file itself;
+  # just open it and use it.
+  open(INDEX, $file) || die "Couldn't open $file";
+  my $this_dir = $file;
+  $this_dir =~ s%(^|/)[^/]*$%$1%;
+  if ($this_dir =~ m/^\//) {
+    # already an absolute directory
+  } else {
+    # perhaps ought to simplify
+    $this_dir = $current_dir . $this_dir;
+  }
+  my $prefix = $this_dir;
+  $prefix =~ s/\/index-files\//\//;
+  if (-d "${prefix}java.base/") {
+    # It's the JDK.  Handle modules.
+    opendir(DIR, $prefix) or die "Could not open $prefix\n";
+    while (my $subdir = readdir(DIR)) {
+      next unless -d "${prefix}$subdir";
+      next unless $subdir =~ /^(java|jdk)\./;
+      $javadoc_ignored_prefixes{"file:${prefix}$subdir/"} = 1;
+    }
+  } else {
+    $javadoc_ignored_prefixes{"file:$prefix"} = 1;
+  }
+  while (<INDEX>) {
+    if (m%^  <dt> public interface <(?:b|strong)>%) {
+      if ($debug) { print STDERR "Considering: $_"; }
+    }
+    if (m%^  <dt> public interface <(?:b|strong|span class="strong")>(\w+)</(?:b|strong|span)>%) {
+      $refs{$1} .= " \"" . "file:$this_dir" . $1 . ".html\"";
+    }
+    # Get rid of type parameters; a user never wants to look up their names.
+    # This cannot just use the "g" modifier (global replace), because
+    # type parameters may be nested:  Enum<E extends Enum<E>>.
+    if (m/type parameter in/) {
+      if ($debug) { print STDERR "Replacing 'type parameter in': $_"; }
+    }
+    # Problem: the extends clause may contain nested extends clauses.
+    # Example: http://commons.apache.org/proper/commons-math/javadocs/api-3.6/org/apache/commons/math3/optim/SimplePointChecker.html
+    while (s%&lt;
+	   ((\@[^\ &]+\ |<a\ href="[^<>\"]*">\@[^\ ]+</a>\ )*    # any number of type annotations
+	    (\?|<a\ href="[^\ ]+"\ title="type\ parameter\ in\ [^\ \">]*?">[^\ ]*?</a>) # "?" or "<a href...type parameter in...>...</a>"
+	    (\ (extends|super)                                    # any number of extends clauses
+	     \ (\@[^\ &]+\ |<a\ href="[^<>\"]*"[^<>]*>\@[^\ ]+</a>\ )*  # ... containing any number of type annotations
+             (<a\ [^>]*>[^\ <]*</a>                               # ... here is the type in the extends clause,
+              (&lt;[^&]+&gt;)?                                    # ... ... which may be parameterized
+	      |[^\ &<>]+)
+	    )?
+            ,?(<wbr>)?([&][#]8203;)?
+	   )+
+	   &gt;%%ix) {
+      if ($debug) { print STDERR "After one replacement        : $_"; }
+      # empty body
+    }
+    if (m/\"type parameter in/) { die "Substitution failed in $file, still has \"type parameter in\":\n$_"; }
+
+    # This regexp is intentionally not anchored at its beginning or end,
+    # because sometimes line breaks are missing.
+    # (Problem: Distributed XOM Javadocs do not use <B>...</B> tags.)
+    while (m%<DT>[ \t]*(?:<span class="(?:strong|memberNameLink)">)?<A HREF="([^"]*)"(?: class="member-name-link")?(?: title="[^"]*")?>(?:<(?:B|STRONG|span class="strong"|span class="typeNameLink")>)?([^<]*)(\([^<]*\))?(?:</(?:B|STRONG|span)>)?</A>(?:</span>)?(\(.*?\))?(\.| - )%ig) {
+      # Either $3 or $4 could be set (but not both).
+      # my ($this_ref,$this_item,$this_args1,$this_args2) = ($1,$2,$3,$4);
+      my ($this_ref,$this_item) = ($1,$2);
+      # Remove type annotations.  The comma separating them is a bug in Javadoc.
+      $this_item =~ s/(\(|, )([, ]?\@[A-Za-z0-9_.]+(\([^)]*\))?)* /\1/g;
+      if ($this_ref =~ /\"/) {
+        die "In $file, bad this_ref has double-quote:\n  this_ref=$this_ref\n  this_item=$this_item\n  in $_";
+      }
+      if ($this_item =~ /\"/) {
+        die "In $file, bad this_item has double-quote:\n  this_ref=$this_ref\n  this_item=$this_item\n  in $_";
+      }
+      $this_ref = $this_dir . $this_ref;
+      $this_ref =~ s%/[^/]+/\.\./%/%g;
+      $this_ref =~ s%/(\./)+%/%g;
+      $this_item =~ s%&lt;%<%g;
+      $this_item =~ s%&gt;%>%g;
+      if ($debug) { print ";; <<<$this_dir>>><<<$this_ref>>><<<$this_item>>>\n"; }
+      # if ($debug) { print ";; <<<$this_dir>>><<<$this_ref>>><<<$this_item>>><<<$this_args>>>\n"; }
+      $refs{$this_item} .= " \"file:$this_ref\"";
+    }
+  }
+}
+
+# I can't require javadoc-lookup because it loads .javadoc-index.el.
+# print "(eval-when-compile '(require 'javadoc-lookup))\n";
+print "(setq javadoc-html-refs '(\n";
+# Reverse the list so that, when completion-ignore-case is t, "Class"
+# takes priority over the less-likely-to-be-desired "CLASS".
+for my $item (reverse sort keys %refs) {
+  my $refs_sans_leading_trailing = $refs{$item};
+  $refs_sans_leading_trailing =~ s/^ "//;
+  $refs_sans_leading_trailing =~ s/"$//;
+  my $sorted_refs;
+  if ($sort_sublists) {
+    # Sort for reproducibility of results.  Problem:  user has no control
+    # over which version is chosen, if duplicate Javadoc exists.
+    my @refs = split('" "', $refs_sans_leading_trailing);
+    $sorted_refs = join('" "', sort(@refs));
+  } else {
+    # Prioritize the first-seen version of Javadoc for any class.
+    $sorted_refs = $refs_sans_leading_trailing;
+  }
+  print " (\"$item\" \"$sorted_refs\")\n";
+}
+print "))\n";
+
+print "(setq javadoc-ignored-prefixes (list\n";
+for my $prefix (sort keys %javadoc_ignored_prefixes) {
+  print "  (concat \"^\" (regexp-quote \"$prefix\"))\n";
+}
+print "))\n";
+
+
+
