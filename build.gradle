@@ -21,7 +21,7 @@ dependencies {
   // Used by Jsoup, needed to avoid compilation warnings.
   implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
 
-  implementation 'org.plumelib:plume-util:1.5.8'
+  implementation 'org.plumelib:plume-util:1.5.9'
 }
 
 application {
