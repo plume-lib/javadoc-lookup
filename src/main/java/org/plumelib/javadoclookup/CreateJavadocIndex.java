@@ -127,7 +127,7 @@ public final class CreateJavadocIndex {
     System.out.println(";; arguments: " + String.join(" ", indexFiles));
     System.out.println("(setq javadoc-html-refs '(");
     for (String key : sortedKeys) {
-      System.out.print(" (\"" + key + "\"");
+      System.out.print(" (\"" + key.replace("\"", "\\\"") + "\"");
       for (String ref : index.get(key)) {
         System.out.print(" \"" + ref + "\"");
       }
