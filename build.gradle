@@ -5,6 +5,9 @@ plugins {
   // To create a fat jar build/libs/javadoc-lookup-all.jar, run: ./gradlew shadowJar
   id 'com.github.johnrengelman.shadow' version '7.1.2'
 
+  // Code formatting; defines targets "spotlessApply" and "spotlessCheck"
+  id "com.diffplug.spotless" version "6.9.2"
+
   // Error Prone linter
   id("net.ltgt.errorprone") version "2.0.2"
 
@@ -26,6 +29,23 @@ dependencies {
 
 application {
   mainClass = 'org.plumelib.javadoclookup.CreateJavadocIndex'
+}
+
+spotless {
+  format 'misc', {
+    // define the files to apply `misc` to
+    target '*.gradle', '*.md', '.gitignore'
+
+    // define the steps to apply to those files
+    trimTrailingWhitespace()
+    indentWithSpaces(2)
+    endWithNewline()
+  }
+  java {
+    targetExclude("**/WeakIdentityHashMap.java")
+    googleJavaFormat()
+    typeAnnotations()
+  }
 }
 
 /// Error Prone linter
@@ -90,8 +110,8 @@ javadoc {
   doLast {
     if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
       ant.replaceregexp(match:"@import url\\('resources/fonts/dejavu.css'\\);\\s*", replace:'',
-	flags:'g', byline:true) {
-	fileset(dir: destinationDir)
+        flags:'g', byline:true) {
+        fileset(dir: destinationDir)
       }
     }
   }
@@ -109,8 +129,8 @@ task javadocWeb(type: Javadoc) {
   doLast {
     if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
       ant.replaceregexp(match:"@import url\\('resources/fonts/dejavu.css'\\);\\s*", replace:'',
-	flags:'g', byline:true) {
-	fileset(dir: destinationDir)
+        flags:'g', byline:true) {
+        fileset(dir: destinationDir)
       }
     }
   }
