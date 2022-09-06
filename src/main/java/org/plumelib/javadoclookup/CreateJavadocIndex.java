@@ -67,33 +67,35 @@ public final class CreateJavadocIndex {
   public static void main(String[] args) throws IOException {
 
     // If no arguments supplied, use the contents of file ~/.javadoc-index-files .
-    List<String> indexFiles;
+    List<String> indexFileNames;
     if (args.length != 0) {
-      indexFiles = Arrays.asList(args);
+      indexFileNames = Arrays.asList(args);
     } else {
       String javadocIndexFilesFile = System.getProperty("user.home") + "/" + ".javadoc-index-files";
-      indexFiles = readAndGlobFiles(javadocIndexFilesFile);
+      indexFileNames = readAndGlobFiles(javadocIndexFilesFile);
     }
 
-    for (String indexFile : indexFiles) {
+    for (String indexFileName : indexFileNames) {
       if (debug) {
-        System.out.println("About to parse: " + indexFile);
+        System.out.println("About to parse: " + indexFileName);
       }
-      File input = new File(indexFile);
-      Document doc = Jsoup.parse(input, "UTF-8");
-      Path dir = input.toPath().getParent();
+      File indexFile = new File(indexFileName);
+      Document doc = Jsoup.parse(indexFile, "UTF-8");
+      Path dir = indexFile.toPath().getParent();
       if (dir == null) {
-        System.err.println("Null dir for " + input);
+        System.err.println("Null dir for " + indexFile);
         System.exit(1);
       }
 
-      addIgnoredPrefix(input, dir);
+      addIgnoredPrefix(indexFile, dir);
 
       Elements classElts = doc.select("span[class=memberNameLink]");
       for (Element classElt : classElts) {
         Element ahref = classElt.selectFirst("a[href]");
         if (ahref == null) {
-          System.err.println("No <a href=...> in: " + classElt);
+          System.err.println("In " + indexFileName + ", no <a href=...> in: " + classElt);
+          System.err.println("parent = " + classElt.parent());
+          System.err.println("CreateJavadocIndex FAILED; exiting.");
           System.exit(1);
         }
         addToIndex(ahref.html(), ahref.attributes().get("href"), dir);
@@ -126,10 +128,10 @@ public final class CreateJavadocIndex {
 
     System.out.println(";; For use by Emacs function javadoc-lookup.");
     System.out.println(";; Created by CreateJavadocIndex.");
-    System.out.println(";; arguments: " + String.join(" ", indexFiles));
+    System.out.println(";; arguments: " + String.join(" ", indexFileNames));
     System.out.println("(setq javadoc-html-refs '(");
     for (String key : sortedKeys) {
-      System.out.print(" (\"" + key + "\"");
+      System.out.print(" (\"" + key.replace("\"", "\\\"") + "\"");
       for (String ref : index.get(key)) {
         System.out.print(" \"" + ref + "\"");
       }
