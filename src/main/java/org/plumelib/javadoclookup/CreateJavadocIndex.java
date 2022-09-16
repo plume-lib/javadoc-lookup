@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -122,8 +121,7 @@ public final class CreateJavadocIndex {
       }
     }
 
-    // TODO: Under JDK 18, `@NonNull` is required here but no warning suppression is required.
-    @NonNull List<@KeyFor("index") String> sortedKeys =
+    List<@KeyFor("index") String> sortedKeys =
         index.keySet().stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
 
     System.out.println(";; For use by Emacs function javadoc-lookup.");
