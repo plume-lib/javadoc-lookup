@@ -39,7 +39,8 @@ import org.jsoup.select.Elements;
  * <p>For example, run it like this:
  *
  * <pre>
- * java -cp .../javadoc-lookup/build/libs/javadoclookup-all.jar org.plumelib.javadoclookup.CreateJavadocIndex &gt; ~/.javadoc-index.el
+ * java -cp .../javadoc-lookup/build/libs/javadoclookup-all.jar \
+ *   org.plumelib.javadoclookup.CreateJavadocIndex &gt; ~/.javadoc-index.el
  * </pre>
  */
 public final class CreateJavadocIndex {
@@ -101,9 +102,9 @@ public final class CreateJavadocIndex {
         addToIndex(ahref.html(), ahref.attributes().get("href"), dir);
       }
 
-      Elements aMnlElts = doc.select("a[class=member-name-link]");
-      for (Element aMnl : aMnlElts) {
-        addToIndex(aMnl.html(), aMnl.attributes().get("href"), dir);
+      Elements mnlAnchors = doc.select("a[class=member-name-link]");
+      for (Element mnlAnchor : mnlAnchors) {
+        addToIndex(mnlAnchor.html(), mnlAnchor.attributes().get("href"), dir);
       }
 
       Elements atitleElts = doc.select("a[title]");
@@ -122,14 +123,14 @@ public final class CreateJavadocIndex {
       }
     }
 
-    // TODO: Under JDK 18, `@NonNull` is required here but no warning suppression is required.
-    @NonNull List<@KeyFor("index") String> sortedKeys =
-        index.keySet().stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
-
     System.out.println(";; For use by Emacs function javadoc-lookup.");
     System.out.println(";; Created by CreateJavadocIndex.");
     System.out.println(";; arguments: " + String.join(" ", indexFileNames));
     System.out.println("(setq javadoc-html-refs '(");
+
+    // TODO: Under JDK 18, `@NonNull` is required here but no warning suppression is required.
+    @NonNull List<@KeyFor("index") String> sortedKeys =
+        index.keySet().stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
     for (String key : sortedKeys) {
       System.out.print(" (\"" + key.replace("\"", "\\\"") + "\"");
       for (String ref : index.get(key)) {
