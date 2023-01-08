@@ -2,4 +2,4 @@
 
 The javadoc-lookup project consists of two parts:
  * Emacs commands that look up Java API documentation, displaying it in a browser.
- * A program that creates the index files used by the Emacs commands.
+ * A Java program that creates the index files used by the Emacs commands.
