@@ -168,6 +168,12 @@ public final class CreateJavadocIndex {
         System.exit(1);
       }
     }
+    // The API documentation for Jgit is within a "org.eclipse.jgit" subdirectory.
+    Path orgEclipseJgitSubdirectory = ignoredPrefix.resolve("org.eclipse.jgit");
+    if (orgEclipseJgitSubdirectory.toFile().exists()
+        && orgEclipseJgitSubdirectory.toFile().isDirectory()) {
+      ignoredPrefix = orgEclipseJgitSubdirectory;
+    }
     if (Files.exists(Paths.get(ignoredPrefix.toString(), "java.base"))) {
       // It's the JDK.  Handle modules.
       // TODO: it would be better to compare paths to packages, without special-casing
