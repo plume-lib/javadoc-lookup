@@ -98,6 +98,8 @@ The mapping is created by the javadoc-index-to-alist program.")
       (goto-char (point-min))
       (if (not (search-forward insertion nil t))
 	  (progn
+	    (while (re-search-forward "^import static " nil t)
+	      (forward-line 1))
 	    (or (re-search-forward "^import\\b\\|^class\\b\\|^public\\b\\|^static\\b\\|^@SuppressWarnings\\b" nil t)
 		(re-search-forward "^/\\*" nil t))
 	    (beginning-of-line)
