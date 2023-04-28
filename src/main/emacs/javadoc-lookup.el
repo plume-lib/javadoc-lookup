@@ -126,7 +126,7 @@ The mapping is created by the javadoc-index-to-alist program.")
 	  ;; Requires that compilation is run at top level; makefile must not do "cd", for example.
 	  (find-file (replace-regexp-in-string "/checker-qual/" "/checker/" filename))
 	  (if (not buffer-read-only) ;; silently ignore read-only buffers
-	      (java-insert-import class-to-import)
+	      (ignore-errors (java-insert-import class-to-import))
 	    ))))))
 
 
