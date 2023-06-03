@@ -98,6 +98,7 @@ The mapping is created by the javadoc-index-to-alist program.")
       (goto-char (point-min))
       (if (not (search-forward insertion nil t))
 	  (progn
+	    ;; skip over static imports
 	    (while (re-search-forward "^import static " nil t)
 	      (forward-line 1))
 	    (or (re-search-forward "^import\\b\\|^class\\b\\|^public\\b\\|^static\\b\\|^@SuppressWarnings\\b" nil t)
@@ -107,6 +108,7 @@ The mapping is created by the javadoc-index-to-alist program.")
 		(re-search-backward "\\(\n\\|\\`\\)/\\*"))
 	    (if (looking-back "^package .*;\n")
 		(insert "\n"))
+	    ;; TODO: could try to find other imports with the same package, and put it near them.
 	    (insert insertion)
 	    (if (not (looking-at "\n\\|import"))
 		(insert "\n")))))))
