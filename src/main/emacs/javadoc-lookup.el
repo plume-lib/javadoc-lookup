@@ -3,7 +3,7 @@
 ;;; package, class, method, or field, whose name is specified with completion.
 ;;; Originally jdk-goto-ref.el by Greg J. Badros -- 11/3/97.
 ;;; Substantially rewritten by Michael D. Ernst, 11/21/97, 4/22/99
-;;; Also see script javadoc-index-to-alist,
+;;; Also see program CreateJavadocIndex,
 ;;; which creates the file that this Emacs Lisp code uses.
 
 (defvar javadoc-ignored-prefixes
@@ -15,7 +15,7 @@ what Java entities are documented by a particular HTML file.")
 
 (defvar javadoc-index-filename (expand-file-name "~/.javadoc-index.el")
   "File mapping Java identifiers to HTML documentation files.
-The mapping is created by the javadoc-index-to-alist program.")
+The mapping is created by the CreateJavadocIndex")
 (defvar javadoc-html-refs nil
   "Alist of (id . list-of-refs), read from file `javadoc-index-filename'.")
 (if (not javadoc-html-refs)
