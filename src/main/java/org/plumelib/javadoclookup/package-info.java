@@ -1,2 +1,2 @@
-/** Lookin up Javadoc from Emacs. */
+/** Looking up Javadoc from Emacs. */
 package org.plumelib.javadoclookup;
