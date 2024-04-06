@@ -117,9 +117,15 @@ public final class CreateJavadocIndex {
           System.out.println("  title = " + title);
         }
         if (title.startsWith("annotation in ")
+            || title.startsWith("annotation interface in ")
             || title.startsWith("class in ")
+            || title.startsWith("class or interface in ") // do I want this one?
             || title.startsWith("enum in ")
-            || title.startsWith("interface in ")) {
+            || title.startsWith("enum class in ")
+            || title.startsWith("interface in ")
+        // I don't want type parameters.
+        // || title.startsWith("type parameter in ")
+        ) {
           addToIndex(atitle.html(), atitle.attributes().get("href"), dir);
         }
       }
