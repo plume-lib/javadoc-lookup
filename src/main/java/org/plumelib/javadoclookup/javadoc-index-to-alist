@@ -1,5 +1,8 @@
 ## DO NOT USE!  This script is superseded by Java program CreateJavadocIndex.
 
+echo "Do not use.  Use Java program CreateJavadocIndex instead."
+exit 1
+
 #!/usr/bin/env perl
 # Construct .javadoc-index.el file for javadoc-lookup (look up Java docs from Emacs).
 # Michael Ernst <mernst@cs.washington.edu>
