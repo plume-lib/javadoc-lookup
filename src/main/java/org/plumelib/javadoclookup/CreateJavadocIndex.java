@@ -212,6 +212,10 @@ public final class CreateJavadocIndex {
    * @param dir the relative directory for the value
    */
   private static void addToIndex(String item, String href, Path dir) {
+    if (href.contains("http:") || href.contains("https:")) {
+      return;
+    }
+
     item = item.replaceAll("&lt;", "<");
     item = item.replaceAll("&gt;", ">");
     item = item.replaceAll("</?code>", "");
