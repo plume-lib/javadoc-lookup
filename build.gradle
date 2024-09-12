@@ -21,9 +21,11 @@ repositories {
   maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
 }
 
-ext.errorproneVersion = '2.32.0'
-
-ext.isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+ext {
+  errorproneVersion = '2.32.0'
+  isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+  isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
+}
 
 dependencies {
   // findbugs is used by Jsoup, needed to avoid compilation warnings.
@@ -68,7 +70,7 @@ spotless {
 // Error Prone linter
 
 dependencies {
-  errorprone('com.google.errorprone:error_prone_core:2.31.0')
+  errorprone("com.google.errorprone:error_prone_core:${errorproneVersion}")
 }
 tasks.withType(JavaCompile).configureEach {
   // "-processing" avoids javac warning "No processor claimed any of these annotations".
