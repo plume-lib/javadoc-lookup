@@ -31,7 +31,7 @@ dependencies {
   // findbugs is used by Jsoup, needed to avoid compilation warnings.
   implementation 'com.google.code.findbugs:jsr305:3.0.2'
   implementation 'org.jsoup:jsoup:1.18.1'
-  implementation 'org.plumelib:plume-util:1.9.3'
+  implementation 'org.plumelib:plume-util:1.10.0'
 }
 
 application {
