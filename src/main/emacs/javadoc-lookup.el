@@ -31,11 +31,11 @@ The mapping is created by the CreateJavadocIndex")
 
 (defun javadoc-read-id (prompt)
   "Read a string identifier for a Java class or method."
-   ;; Setting completion-ignore-case to t is tempting, because Java code
-   ;; has strange capitalization.  When using an unpatched version of
-   ;; partial completion (from the Emacs 22 pre-test as of June, 2006),
-   ;; there are negative consequences, such as typing "Iterato" and having
-   ;; it complete to "iterator".  But my fixes correct that.
+  ;; Setting completion-ignore-case to t is tempting, because Java code
+  ;; has strange capitalization.  When using an unpatched version of
+  ;; partial completion (from the Emacs 22 pre-test as of June, 2006),
+  ;; there are negative consequences, such as typing "Iterato" and having
+  ;; it complete to "iterator".  But my fixes correct that.
   (let ((completion-ignore-case t))
     (completing-read prompt javadoc-html-refs nil
 		     t			; require match
@@ -89,53 +89,61 @@ The mapping is created by the CreateJavadocIndex")
 (fset 'jlookup `javadoc-lookup)
 
 (defun java-insert-import (id)
-  "Insert an import statement for a Java class."
+  "Insert an import statement for a Java class.
+Returns t if insertion was performed, nil if not."
   (interactive (list (javadoc-read-id "Import class: ")))
   (let* ((ref (javadoc-get-url id))
 	 (class (ref-to-class ref))
 	 (insertion (concat "import " class ";\n")))
     (save-excursion
       (goto-char (point-min))
-      (if (not (search-forward insertion nil t))
-	  (progn
-	    ;; skip over static imports
-	    (while (re-search-forward "^import static " nil t)
-	      (forward-line 1))
-	    (or (re-search-forward "^import\\b\\|^class\\b\\|^public\\b\\|^static\\b\\|^@SuppressWarnings\\b" nil t)
-		(re-search-forward "^/\\*" nil t))
-	    (beginning-of-line)
-	    (if (looking-back "\\*/\n*")
-		(re-search-backward "\\(\n\\|\\`\\)/\\*"))
-	    (if (looking-back "^package .*;\n")
-		(insert "\n"))
-	    ;; TODO: could try to find other imports with the same package, and put it near them.
-	    (insert insertion)
-	    (if (not (looking-at "\n\\|import"))
-		(insert "\n")))))))
+      (let ((needed (not (search-forward insertion nil t))))
+        (if needed
+	    (progn
+	      ;; skip over static imports
+	      (while (re-search-forward "^import static " nil t)
+	        (forward-line 1))
+	      (or (re-search-forward "^import\\b\\|^class\\b\\|^public\\b\\|^static\\b\\|^@SuppressWarnings\\b" nil t)
+		  (re-search-forward "^/\\*" nil t))
+	      (beginning-of-line)
+	      (if (looking-back "\\*/\n*")
+		  (re-search-backward "\\(\n\\|\\`\\)/\\*"))
+	      (if (looking-back "^package .*;\n")
+		  (insert "\n"))
+	      ;; TODO: could try to find other imports with the same package, and put it near them.
+	      (insert insertion)
+	      (if (not (looking-at "\n\\|import"))
+		  (insert "\n"))))
+        needed))))
 (fset 'jimport 'java-insert-import)
 
-(defun compilation-java-insert-imports ()
-  "Insert an import for every class mentioned in the *compilation* buffer."
+(defun compilation-fix-java-imports ()
+  "Insert an import for every class mentioned in the *compilation* buffer.
+Returns t if any change was made, nil if not."
   (interactive)
-  (with-current-buffer "*compilation*"
-    (goto-char (point-min))
-    (while (re-search-forward
-	    "^\\(?:\\[\\(?:ERROR\\|WARNING\\)\\] \\|\\(?::[A-Za-z0-9]+\\):compileJava\\)?\\(.*\\.java\\):\\(?:[0-9]+:\\|\\[[0-9]+,[0-9]+\\]\\)\\(?: error:\\)? cannot find symbol.*\n\\(?:.*\n.*\n\\)?  symbol: +\\(?:variable\\|class\\) \\([A-Za-z0-9_]+\\)\n"
-	    nil t)
-      (let ((filename (match-string 1))
-	    (class-to-import (match-string 2)))
-	(if (string-match "^:[a-zA-Z]*/" filename)
-	    (setq filename (substring filename (- (match-end 0) 1))))
-	(save-excursion
-	  ;; Requires that compilation is run at top level; makefile must not do "cd", for example.
-	  (find-file (replace-regexp-in-string "/checker-qual/" "/checker/" filename))
-	  (if (not buffer-read-only) ;; silently ignore read-only buffers
-	      (ignore-errors (java-insert-import class-to-import))
-	    ))))))
+  (let ((result nil))
+    (with-current-buffer "*compilation*"
+      (goto-char (point-min))
+      (while (re-search-forward
+	      "^\\(?:\\[\\(?:ERROR\\|WARNING\\)\\] \\|\\(?::[A-Za-z0-9]+\\):compileJava\\)?\\(.*\\.java\\):\\(?:[0-9]+:\\|\\[[0-9]+,[0-9]+\\]\\)\\(?: error:\\)? cannot find symbol.*\n\\(?:.*\n.*\n\\)?  symbol: +\\(?:variable\\|class\\) \\([A-Za-z0-9_]+\\)\n"
+	      nil t)
+        (let ((filename (match-string 1))
+	      (class-to-import (match-string 2)))
+	  (if (string-match "^:[a-zA-Z]*/" filename)
+	      (setq filename (substring filename (- (match-end 0) 1))))
+	  (save-excursion
+	    ;; Requires that compilation is run at top level; makefile must not do "cd", for example.
+	    (find-file (replace-regexp-in-string "/checker-qual/" "/checker/" filename))
+	    (if (not buffer-read-only) ;; silently ignore read-only buffers
+	        (if (ignore-errors (java-insert-import class-to-import))
+                    (progn
+                      (save-buffer)
+                      (setq result t))))))))
+    result))
 
 
 ;; ;; I cannot get this to work; the current buffer stays at *compilation* after compile-goto-error.
-;; (defun compilation-java-insert-imports ()
+;; (defun compilation-fix-java-imports ()
 ;;   "Insert an import for every class mentioned in the *compilation* buffer."
 ;;   (interactive)
 ;;   (with-current-buffer "*compilation*"
@@ -175,7 +183,7 @@ The mapping is created by the CreateJavadocIndex")
 (eval-after-load "browse-url"
   ;; add open-paren to list of quoted characters
   '(defun browse-url-netscape (url &optional new-window)
-  "Ask the Netscape WWW browser to load URL.
+     "Ask the Netscape WWW browser to load URL.
 
 Default to the URL around or before point.  The strings in variable
 `browse-url-netscape-arguments' are also passed to Netscape.
@@ -187,26 +195,26 @@ the effect of `browse-url-new-window-p'.
 
 When called non-interactively, optional second argument NEW-WINDOW is
 used instead of `browse-url-new-window-p'."
-  (interactive (browse-url-interactive-arg "Netscape URL: "))
-  ;; URL encode any `confusing' characters in the URL.  This needs to
-  ;; include at least commas; presumably also close parens.
-  (while (string-match "[,()]" url)
-    (setq url (replace-match
-               (format "%%%x" (string-to-char (match-string 0 url))) t t url)))
-  (let* ((process-environment (browse-url-process-environment))
-         (process (apply 'start-process
-                         (concat "netscape " url) nil
-                         browse-url-netscape-program
-                         (append
-                          browse-url-netscape-arguments
-                          (if (eq window-system 'w32)
-                              (list url)
+     (interactive (browse-url-interactive-arg "Netscape URL: "))
+     ;; URL encode any `confusing' characters in the URL.  This needs to
+     ;; include at least commas; presumably also close parens.
+     (while (string-match "[,()]" url)
+       (setq url (replace-match
+                  (format "%%%x" (string-to-char (match-string 0 url))) t t url)))
+     (let* ((process-environment (browse-url-process-environment))
+            (process (apply 'start-process
+                            (concat "netscape " url) nil
+                            browse-url-netscape-program
                             (append
-                             (if new-window '("-noraise"))
-                             (list "-remote"
-                                   (concat "openURL(" url
-                                           (if new-window ",new-window")
-                                           ")"))))))))
-    (set-process-sentinel process
-                          (list 'lambda '(process change)
-                                (list 'browse-url-netscape-sentinel 'process url))))))
+                             browse-url-netscape-arguments
+                             (if (eq window-system 'w32)
+                                 (list url)
+                               (append
+                                (if new-window '("-noraise"))
+                                (list "-remote"
+                                      (concat "openURL(" url
+                                              (if new-window ",new-window")
+                                              ")"))))))))
+       (set-process-sentinel process
+                             (list 'lambda '(process change)
+                                   (list 'browse-url-netscape-sentinel 'process url))))))
