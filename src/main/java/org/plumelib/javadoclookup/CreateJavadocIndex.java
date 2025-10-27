@@ -243,6 +243,7 @@ public final class CreateJavadocIndex {
    * @param filename the file that contains possibly-globbed filenames
    * @return the filenames in the given file, with globs expanded
    */
+  @SuppressWarnings({"PMD.AvoidReassigningLoopVariables", "PMD.ExceptionAsFlowControl"})
   private static List<String> readAndGlobFiles(String filename) {
 
     try (BufferedReader br = Files.newBufferedReader(Paths.get(filename), UTF_8)) {
