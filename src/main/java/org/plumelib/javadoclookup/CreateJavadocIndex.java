@@ -243,17 +243,18 @@ public final class CreateJavadocIndex {
    * @param filename the file that contains possibly-globbed filenames
    * @return the filenames in the given file, with globs expanded
    */
+  @SuppressWarnings("PMD.ExceptionAsFlowControl")
   private static List<String> readAndGlobFiles(String filename) {
 
     try (BufferedReader br = Files.newBufferedReader(Paths.get(filename), UTF_8)) {
 
       List<String> result = new ArrayList<>();
 
-      for (String line = br.readLine(); line != null; line = br.readLine()) {
+      for (String line_orig = br.readLine(); line_orig != null; line_orig = br.readLine()) {
         if (debug) {
-          System.out.println("readAndGlobFiles: line = " + line);
+          System.out.println("readAndGlobFiles: line = " + line_orig);
         }
-        line = line.trim();
+        String line = line_orig.trim();
         if (line.isEmpty() || line.startsWith("#")) {
           continue;
         }
