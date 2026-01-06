@@ -218,3 +218,5 @@ used instead of `browse-url-new-window-p'."
        (set-process-sentinel process
                              (list 'lambda '(process change)
                                    (list 'browse-url-netscape-sentinel 'process url))))))
+
+(provide 'javadoc-lookup)
