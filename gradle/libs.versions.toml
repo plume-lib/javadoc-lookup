@@ -24,6 +24,6 @@ jsoup = "org.jsoup:jsoup:1.22.1"
 
 jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 
-plume-util = "org.plumelib:plume-util:1.13.0"
+plume-util = "org.plumelib:plume-util:1.14.0"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
