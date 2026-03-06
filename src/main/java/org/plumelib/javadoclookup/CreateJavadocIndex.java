@@ -136,7 +136,6 @@ public final class CreateJavadocIndex {
     System.out.println(";; arguments: " + String.join(" ", indexFileNames));
     System.out.println("(setq javadoc-html-refs '(");
 
-    // TODO: Under JDK 18, `@NonNull` is required here but no warning suppression is required.
     @NonNull List<@KeyFor("index") String> sortedKeys =
         index.keySet().stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
     for (String key : sortedKeys) {
