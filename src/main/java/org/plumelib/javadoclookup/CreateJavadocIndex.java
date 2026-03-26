@@ -149,7 +149,8 @@ public final class CreateJavadocIndex {
     System.out.println();
     System.out.println("(setq javadoc-ignored-prefixes (list");
     for (String prefix : ignoredPrefixes) {
-      System.out.println("  (concat \"^\" (regexp-quote \"%s%s\"))".formatted(prefix, File.separator));
+      System.out.println(
+          "  (concat \"^\" (regexp-quote \"%s%s\"))".formatted(prefix, File.separator));
     }
     System.out.println("))");
   }
