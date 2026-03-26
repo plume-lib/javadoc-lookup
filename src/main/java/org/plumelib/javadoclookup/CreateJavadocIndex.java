@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jsoup.Jsoup;
@@ -96,7 +95,7 @@ public final class CreateJavadocIndex {
       for (Element classElt : classElts) {
         Element ahref = classElt.selectFirst("a[href]");
         if (ahref == null) {
-          System.err.println("In " + indexFileName + ", no <a href=...> in: " + classElt);
+          System.err.println("In %s, no <a href=...> in: %s".formatted(indexFileName, classElt));
           System.err.println("parent = " + classElt.parent());
           System.err.println("CreateJavadocIndex FAILED; exiting.");
           System.exit(1);
@@ -137,7 +136,7 @@ public final class CreateJavadocIndex {
     System.out.println("(setq javadoc-html-refs '(");
 
     @NonNull List<@KeyFor("index") String> sortedKeys =
-        index.keySet().stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        index.keySet().stream().sorted(Comparator.reverseOrder()).toList();
     for (String key : sortedKeys) {
       System.out.print(" (\"" + key.replace("\"", "\\\"") + "\"");
       for (String ref : index.get(key)) {
@@ -150,7 +149,8 @@ public final class CreateJavadocIndex {
     System.out.println();
     System.out.println("(setq javadoc-ignored-prefixes (list");
     for (String prefix : ignoredPrefixes) {
-      System.out.println("  (concat \"^\" (regexp-quote \"" + prefix + File.separator + "\"))");
+      System.out.println(
+          "  (concat \"^\" (regexp-quote \"%s%s\"))".formatted(prefix, File.separator));
     }
     System.out.println("))");
   }
