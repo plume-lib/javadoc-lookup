@@ -223,7 +223,8 @@ public final class CreateJavadocIndex {
     item = item.replaceAll("^@", "");
 
     String fileHref = "file:" + dir.resolve(href).normalize();
-    fileHref = fileHref.replaceAll("[()]", "-");
+    // This was needed for Javadoc in Java 8 and less.
+    // fileHref = fileHref.replaceAll("[()]", "-");
     fileHref = fileHref.replaceAll("@[a-zA-Z.]+ ", "");
     if (debug) {
       System.out.println("    fileHref: " + fileHref);
