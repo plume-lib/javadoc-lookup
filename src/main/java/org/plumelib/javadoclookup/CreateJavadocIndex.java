@@ -30,8 +30,8 @@ import org.jsoup.select.Elements;
 // Handles only globs within a single directory.
 
 /**
- * CreateJavadocIndex reads {@code index-all.html} API documentation files (typically {@code
- * index-all.html} files) and outputs an index that Emacs can use for looking up Java documentation.
+ * CreateJavadocIndex reads API documentation files (typically {@code index-all.html} files) and
+ * outputs an index that Emacs can use for looking up Java documentation.
  *
  * <p>With no arguments, it reads file {@code ~/.javadoc-index-files}, which should contain a list
  * of API documentation files, one per line. Blank lines are permitted in the file, as are comment
@@ -68,7 +68,7 @@ public final class CreateJavadocIndex {
    */
   public static void main(String[] args) throws IOException {
 
-    // If no arguments supplied, use the contents of file ~/.javadoc-index-files .
+    // If no arguments are supplied, use the contents of file ~/.javadoc-index-files .
     List<String> indexFileNames;
     if (args.length != 0) {
       indexFileNames = Arrays.asList(args);
@@ -175,7 +175,7 @@ public final class CreateJavadocIndex {
         System.exit(1);
       }
     }
-    // The API documentation for Jgit is within a "org.eclipse.jgit" subdirectory.
+    // The API documentation for JGit is within an "org.eclipse.jgit" subdirectory.
     Path orgEclipseJgitSubdirectory = ignoredPrefix.resolve("org.eclipse.jgit");
     if (Files.isDirectory(orgEclipseJgitSubdirectory)) {
       ignoredPrefix = orgEclipseJgitSubdirectory;
@@ -223,8 +223,6 @@ public final class CreateJavadocIndex {
     item = item.replaceAll("^@", "");
 
     String fileHref = "file:" + dir.resolve(href).normalize();
-    // This was needed for Javadoc in Java 8 and less.
-    // fileHref = fileHref.replaceAll("[()]", "-");
     fileHref = fileHref.replaceAll("@[a-zA-Z.]+ ", "");
     if (debug) {
       System.out.println("    fileHref: " + fileHref);
@@ -305,7 +303,7 @@ public final class CreateJavadocIndex {
     } catch (FileNotFoundException e) {
       System.err.println("File not found: " + filename);
       System.exit(1);
-      return new ArrayList<>(); // dead code, but Java compiler requires it
+      return new ArrayList<>(); // dead code, but the Java compiler requires it
     } catch (IOException e) {
       System.err.println("Trouble while reading file " + filename + " : " + e.getMessage());
       System.exit(1);

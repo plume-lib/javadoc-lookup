@@ -15,7 +15,7 @@ what Java entities are documented by a particular HTML file.")
 
 (defvar javadoc-index-filename (expand-file-name "~/.javadoc-index.el")
   "File mapping Java identifiers to HTML documentation files.
-The mapping is created by the CreateJavadocIndex")
+The mapping is created by the program CreateJavadocIndex.")
 (defvar javadoc-html-refs nil
   "Alist of (id . list-of-refs), read from file `javadoc-index-filename'.")
 (if (not javadoc-html-refs)
@@ -132,7 +132,7 @@ Returns t if any change was made, nil if not."
 	  (if (string-match "^:[a-zA-Z]*/" filename)
 	      (setq filename (substring filename (- (match-end 0) 1))))
 	  (save-excursion
-	    ;; Requires that compilation is run at top level; makefile must not do "cd", for example.
+	    ;; Requires that compilation is run at top level; the makefile must not do "cd", for example.
 	    (find-file (replace-regexp-in-string "/checker-qual/" "/checker/" filename))
 	    (if (not buffer-read-only) ;; silently ignore read-only buffers
 	        (if (ignore-errors (java-insert-import class-to-import))
