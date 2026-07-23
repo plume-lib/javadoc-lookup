@@ -47,7 +47,7 @@ The mapping is created by the program CreateJavadocIndex.")
 			    (try (try-completion guess javadoc-html-refs)))
 		       (if (eq try t) guess try)))))
 
-;; Map from Java class/method name to fully-qualified class name, both as strings
+;; Map from Java class/method name to fully qualified class name, both as strings.
 (defvar javadoc-get-url-hashtable (make-hash-table :test 'equal))
 
 ;; TODO: add a cache to avoid repeated queries about the same class
