@@ -61,7 +61,7 @@ public final class CreateJavadocIndex {
   }
 
   /**
-   * Scan the specified file(s) for API documentation index and print the corresponding entries.
+   * Scan the specified file(s) for an API documentation index and print the corresponding entries.
    *
    * @param args command-line arguments: {@code index-all.html} files
    * @throws IOException if there is a problem reading a file
@@ -236,7 +236,7 @@ public final class CreateJavadocIndex {
    * Read lines from the given file, each of which is a comment or a filename, possibly including a
    * "*" glob in the file name. Globs in directory names are not handled.
    *
-   * @param filename the file that contains possibly-globbed filenames
+   * @param filename the file that contains possibly globbed filenames
    * @return the filenames in the given file, with globs expanded
    */
   @SuppressWarnings("PMD.ExceptionAsFlowControl")
@@ -296,7 +296,7 @@ public final class CreateJavadocIndex {
         }
       }
 
-      //  Sorting makes the results more deterministic, easier to compare.
+      // Sorting makes the results more deterministic and easier to compare.
       Collections.sort(result);
       return result;
 
