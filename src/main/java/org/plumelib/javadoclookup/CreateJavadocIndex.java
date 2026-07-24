@@ -4,11 +4,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public final class CreateJavadocIndex {
 
     for (String indexFileName : indexFileNames) {
       if (debug) {
-        System.out.println("About to parse: " + indexFileName);
+        System.err.println("About to parse: " + indexFileName);
       }
       File indexFile = new File(indexFileName);
       Document doc = Jsoup.parse(indexFile, "UTF-8");
@@ -112,8 +112,8 @@ public final class CreateJavadocIndex {
       for (Element atitle : atitleElts) {
         String title = atitle.attributes().get("title");
         if (debug) {
-          System.out.println("atitle = " + atitle);
-          System.out.println("  title = " + title);
+          System.err.println("atitle = " + atitle);
+          System.err.println("  title = " + title);
         }
         if (title.startsWith("annotation in ")
             || title.startsWith("annotation interface in ")
@@ -225,7 +225,7 @@ public final class CreateJavadocIndex {
     String fileHref = "file:" + dir.resolve(href).normalize();
     fileHref = fileHref.replaceAll("@[a-zA-Z.]+ ", "");
     if (debug) {
-      System.out.println("    fileHref: " + fileHref);
+      System.err.println("    fileHref: " + fileHref);
     }
 
     Set<String> hrefs = index.computeIfAbsent(item, key -> new TreeSet<>());
@@ -248,7 +248,7 @@ public final class CreateJavadocIndex {
 
       for (String line_orig = br.readLine(); line_orig != null; line_orig = br.readLine()) {
         if (debug) {
-          System.out.println("readAndGlobFiles: line = " + line_orig);
+          System.err.println("readAndGlobFiles: line = " + line_orig);
         }
         String line = line_orig.trim();
         if (line.isEmpty() || line.startsWith("#")) {
@@ -257,7 +257,7 @@ public final class CreateJavadocIndex {
 
         int asteriskPos = line.indexOf('*');
         if (debug) {
-          System.out.println("asteriskPos = " + asteriskPos);
+          System.err.println("asteriskPos = " + asteriskPos);
         }
         if (asteriskPos == -1) {
           // This line is not a glob, but the file might not exist.
@@ -270,14 +270,14 @@ public final class CreateJavadocIndex {
           // This line is a glob
           int slashPos = line.lastIndexOf('/', asteriskPos);
           if (slashPos == -1) {
-            System.err.println("glob pattern contains no directory slash");
-            System.exit(-1);
+            System.err.println("glob pattern contains no directory slash: " + line);
+            System.exit(1);
           }
           String globDirName = line.substring(0, slashPos);
           Path globDirPath = Paths.get(globDirName);
           String globFileName = line.substring(slashPos + 1);
           if (debug) {
-            System.out.printf(
+            System.err.printf(
                 "slashPos = %d; newDirectoryStream(%s, %s)%n", slashPos, globDirName, globFileName);
           }
           if (Files.exists(globDirPath)) {
@@ -300,10 +300,10 @@ public final class CreateJavadocIndex {
       Collections.sort(result);
       return result;
 
-    } catch (FileNotFoundException e) {
+    } catch (NoSuchFileException e) {
       System.err.println("File not found: " + filename);
       System.exit(1);
-      return new ArrayList<>(); // dead code, but the Java compiler requires it
+      throw new Error(); // dead code, but the Java compiler requires it
     } catch (IOException e) {
       System.err.println("Trouble while reading file " + filename + " : " + e.getMessage());
       System.exit(1);
