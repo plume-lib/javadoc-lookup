@@ -10,7 +10,7 @@ checker-qual = { module = "org.checkerframework:checker-qual", version.ref = "ch
 
 error-prone-core = "com.google.errorprone:error_prone_core:2.50.0"
 
-jsoup = "org.jsoup:jsoup:1.22.2"
+jsoup = "org.jsoup:jsoup:1.23.1"
 
 jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 
