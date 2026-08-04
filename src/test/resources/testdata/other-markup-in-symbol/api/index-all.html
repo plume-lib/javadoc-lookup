@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head><title>Index</title></head>
+<body>
+<!-- CreateJavadocIndex strips only "code" and "span" elements from a symbol.  This file
+     exercises the other elements that can appear within an index entry's link text.  The
+     goal file records that their tags appear in the symbol in the Emacs Lisp output. -->
+<dl class="index">
+<dt><a href="p/Widget.html#wordBreak()" class="member-name-link">aVeryLong<wbr>MethodName()</a> - Method in class p.Widget</dt>
+<dd>Javadoc inserts "wbr" elements into a long name so that a browser can break the line.</dd>
+<dt><a href="p/Widget.html#italic()" class="member-name-link"><i>italic()</i></a> - Method in class p.Widget</dt>
+<dd>An "i" element.</dd>
+<dt><a href="p/Widget.html#bold()" class="member-name-link"><b>bold()</b></a> - Method in class p.Widget</dt>
+<dd>A "b" element.</dd>
+<dt><a href="p/Widget.html#superscript()" class="member-name-link">x<sup>2</sup>()</a> - Method in class p.Widget</dt>
+<dd>A "sup" element.</dd>
+<dt><a href="p/Widget.html#lineBreak()" class="member-name-link">line<br>Break()</a> - Method in class p.Widget</dt>
+<dd>A "br" element, which is empty and therefore has no end tag.</dd>
+</dl>
+</body>
+</html>

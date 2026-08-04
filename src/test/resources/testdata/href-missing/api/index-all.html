@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head><title>Index</title></head>
+<body>
+<!-- An "a" element that has a "class" or "title" attribute but no "href" attribute.
+     Compare test case "missing-anchor", in which a javadoc 8 "memberNameLink" span
+     contains no anchor at all and CreateJavadocIndex exits with a nonzero status.  The
+     goal file records that here CreateJavadocIndex instead reports no problem and emits a
+     reference to the directory that contains the index file. -->
+<dl class="index">
+<dt><a class="member-name-link">noHref()</a> - Method in class p.Widget</dt>
+<dd>A member link that has no "href" attribute.</dd>
+<dt><a href="" class="member-name-link">emptyHref()</a> - Method in class p.Widget</dt>
+<dd>A member link whose "href" attribute is the empty string.</dd>
+<dt><a href="#SEE_ALSO" class="member-name-link">fragmentOnly()</a> - Method in class p.Widget</dt>
+<dd>A member link whose "href" attribute is only a fragment.</dd>
+<dt><a title="class in p">NoHrefClass</a> - Class in p</dt>
+<dd>A type link that has no "href" attribute.</dd>
+<dt><a href="p/Widget.html#ok()" class="member-name-link">ok()</a> - Method in class p.Widget</dt>
+<dd>A well-formed entry, for comparison.</dd>
+</dl>
+</body>
+</html>

@@ -1,0 +1,2 @@
+This file is named as the directory part of a glob in ".javadoc-index-files", but it is a
+file rather than a directory.

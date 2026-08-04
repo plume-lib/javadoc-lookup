@@ -1,0 +1,24 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: api/index-all.html
+(setq javadoc-html-refs '(
+ ("values()" "file:api/com/example/Color.html#values--")
+ ("valueOf(String)" "file:api/com/example/Color.html#valueOf-java.lang.String-")
+ ("name" "file:api/com/example/Widget.html#name")
+ ("compare(T, T)" "file:api/com/example/Widget.html#compare-T-T-")
+ ("compare(List<? extends T>)" "file:api/com/example/Widget.html#compare-java.util.List-")
+ ("area()" "file:api/com/example/Shape.html#area--")
+ ("WidgetException()" "file:api/com/example/WidgetException.html#WidgetException--")
+ ("WidgetException" "file:api/com/example/WidgetException.html")
+ ("Widget.Inner" "file:api/com/example/Widget.Inner.html")
+ ("Widget()" "file:api/com/example/Widget.html#Widget--")
+ ("Widget" "file:api/com/example/Widget.html")
+ ("Shape" "file:api/com/example/Shape.html")
+ ("Marker" "file:api/com/example/Marker.html")
+ ("Inner()" "file:api/com/example/Widget.Inner.html#Inner--")
+ ("Color" "file:api/com/example/Color.html")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:api/"))
+))

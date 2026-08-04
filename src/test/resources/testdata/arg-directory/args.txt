@@ -1,0 +1,3 @@
+# The argument names a directory rather than a file.  The goal file records that
+# CreateJavadocIndex reports this with an uncaught exception and a stack trace.
+api

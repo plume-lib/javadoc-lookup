@@ -120,9 +120,9 @@ public final class CreateJavadocIndexTest {
     command.add("-Dstdout.encoding=UTF-8");
     command.add("-Dstderr.encoding=UTF-8");
     command.add("-cp");
-    command.add(requiredProperty("java.class.path"));
+    command.add(requiredProperty("mainRuntimeClasspath"));
     command.add(CreateJavadocIndex.class.getName());
-    command.addAll(readArgs(caseDir.resolve(ARGS_FILE)));
+    command.addAll(readArgs(caseDir.resolve(ARGS_FILE), caseDir));
 
     Process process =
         new ProcessBuilder(command)
@@ -147,14 +147,17 @@ public final class CreateJavadocIndexTest {
 
   /**
    * Returns the command-line arguments for a test case: the lines of the given file that are
-   * neither blank nor comments. If the file does not exist, returns the empty list, which makes
-   * CreateJavadocIndex read {@code ~/.javadoc-index-files} instead.
+   * neither blank nor comments. In each argument, {@code ${testcase}} is replaced by the test case
+   * directory, which lets a test case pass an absolute file name. If the file does not exist,
+   * returns the empty list, which makes CreateJavadocIndex read {@code ~/.javadoc-index-files}
+   * instead.
    *
    * @param argsFile the file that lists the command-line arguments, one per line
+   * @param caseDir the test case directory
    * @return the command-line arguments
    * @throws IOException if the file cannot be read
    */
-  private static List<String> readArgs(Path argsFile) throws IOException {
+  private static List<String> readArgs(Path argsFile, Path caseDir) throws IOException {
     if (!Files.exists(argsFile)) {
       return List.of();
     }
@@ -162,7 +165,7 @@ public final class CreateJavadocIndexTest {
     for (String line : Files.readAllLines(argsFile, UTF_8)) {
       String arg = line.trim();
       if (!arg.isEmpty() && !arg.startsWith("#")) {
-        result.add(arg);
+        result.add(arg.replace("${testcase}", caseDir.toString()));
       }
     }
     return result;

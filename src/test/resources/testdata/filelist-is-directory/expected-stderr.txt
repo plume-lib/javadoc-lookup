@@ -1,0 +1,1 @@
+Trouble while reading file ${testcase}/.javadoc-index-files : Is a directory
