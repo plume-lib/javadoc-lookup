@@ -34,6 +34,9 @@ dependencies {
   implementation(libs.jsr305)
   implementation(libs.jsoup)
   implementation(libs.plume.util)
+
+  testImplementation(libs.junit.jupiter)
+  testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 application {
@@ -49,6 +52,41 @@ java {
 tasks.withType(JavaCompile).configureEach {
   // Set the language level and bytecode to 17.
   options.release = 17
+}
+
+// The end-to-end tests read their input and goal files straight out of the source tree,
+// because the goal files contain file names that are relative to the test case directory.
+// Copying the test data into the build directory would therefore serve no purpose.
+processTestResources {
+  exclude("testdata/**")
+}
+
+test {
+  useJUnitPlatform {
+    includeEngines("junit-jupiter")
+    excludeEngines("junit-vintage")
+  }
+
+  // The end-to-end tests locate their test data relative to this directory.
+  systemProperty("projectDir", projectDir.absolutePath)
+
+  // Each end-to-end test runs CreateJavadocIndex in a subprocess.  Gradle sets the test
+  // worker's "java.class.path" to Gradle's own bootstrap jar, so the test cannot use
+  // "java.class.path" as the subprocess's classpath.  Set the property in "doFirst" so that
+  // the runtime classpath is resolved only when the tests are actually run.
+  doFirst {
+    systemProperty("mainRuntimeClasspath", sourceSets.main.runtimeClasspath.asPath)
+  }
+
+  // Run `./gradlew test -DupdateGoals=true` to overwrite the goal files with the program's
+  // current output.  Always inspect the resulting diff before committing it.
+  systemProperty("updateGoals", providers.systemProperty("updateGoals").getOrElse("false"))
+
+  testLogging {
+    outputs.upToDateWhen{false}
+    events("failed")
+    exceptionFormat = "full"
+  }
 }
 
 jacocoTestReport {

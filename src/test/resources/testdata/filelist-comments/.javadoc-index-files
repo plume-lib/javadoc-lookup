@@ -1,0 +1,12 @@
+# CreateJavadocIndex trims each line, then ignores the line if it is empty or if it
+# starts with "#".
+
+# The line above is empty, and this line is a comment.
+   # An indented comment: the line is trimmed before the "#" is looked for.
+	# A comment that is indented with a tab.
+
+   api/index-all.html
+# The line above has leading whitespace, and the line below has trailing whitespace.
+api/index-all.html   
+#api/nonexistent.html
+# The line above is a comment, not a file name, so it produces no "Didn't find" message.

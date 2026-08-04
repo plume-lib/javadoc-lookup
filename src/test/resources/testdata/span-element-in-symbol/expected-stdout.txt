@@ -1,0 +1,15 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: api/index-all.html
+(setq javadoc-html-refs '(
+ ("singleQuoted()" "file:api/p/Widget.html#singleQuoted()")
+ ("classAttribute()" "file:api/p/Widget.html#classAttribute()")
+ ("<span>noAttribute()" "file:api/p/Widget.html#noAttribute()")
+ ("<span id=\"i-2\" class=\"deprecated-label\">twoAttributes()" "file:api/p/Widget.html#twoAttributes()")
+ ("<span id=\"i-1\">idAttribute()" "file:api/p/Widget.html#idAttribute()")
+ ("" "file:api/p/Widget.html#emptyContent()")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:api/"))
+))

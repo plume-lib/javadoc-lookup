@@ -1,0 +1,5 @@
+# The same file is named three times: twice literally, and once by a glob.  Reading a
+# file twice adds no index entry, because the index maps a symbol to a set of references.
+api/index-all.html
+api/index-all.html
+api/index-*.html
