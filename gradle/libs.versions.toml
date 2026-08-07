@@ -16,7 +16,7 @@ jsr305 = "com.google.code.findbugs:jsr305:3.0.2"
 
 plume-util = "org.plumelib:plume-util:2.0.0"
 
-require-javadoc = "org.plumelib:require-javadoc:3.0.0-SNAPSHOT"
+require-javadoc = "org.plumelib:require-javadoc:3.0.0"
 
 [plugins]
 
