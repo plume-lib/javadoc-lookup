@@ -3,7 +3,7 @@
 ;; arguments: api/index-all.html
 (setq javadoc-html-refs '(
  ("QUOTE_\"_CHARACTER" "file:api/p/Widget.html#QUOTE")
- ("BACKSLASH_\_CHARACTER" "file:api/p/Widget.html#BACKSLASH")
+ ("BACKSLASH_\\_CHARACTER" "file:api/p/Widget.html#BACKSLASH")
 ))
 
 (setq javadoc-ignored-prefixes (list

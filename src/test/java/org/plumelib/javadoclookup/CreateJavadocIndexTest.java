@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.io.TempDir;
@@ -41,6 +42,9 @@ public final class CreateJavadocIndexTest {
 
   /** The name of the goal file, in a test case directory, for the program's exit status. */
   private static final String STATUS_GOAL_FILE = "expected-status.txt";
+
+  /** How long to wait for the program to finish, in seconds. */
+  private static final long TIMEOUT_SECONDS = 120;
 
   /**
    * If true, overwrite the goal files with the program's current output rather than comparing the
@@ -130,7 +134,12 @@ public final class CreateJavadocIndexTest {
             .redirectOutput(stdoutFile.toFile())
             .redirectError(stderrFile.toFile())
             .start();
-    int status = process.waitFor();
+    if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+      process.destroyForcibly();
+      throw new AssertionError(
+          testCase + ": the program did not finish within " + TIMEOUT_SECONDS + " seconds.");
+    }
+    int status = process.exitValue();
 
     checkGoal(
         caseDir.resolve(STDOUT_GOAL_FILE),

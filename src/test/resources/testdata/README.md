@@ -39,7 +39,7 @@ tests are skipped on Windows.
 
 Run
 
-```
+```shell
 ./gradlew test -DupdateGoals=true
 ```
 

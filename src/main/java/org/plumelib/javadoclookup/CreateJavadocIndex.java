@@ -138,7 +138,10 @@ public final class CreateJavadocIndex {
     @NonNull List<@KeyFor("index") String> sortedKeys =
         index.keySet().stream().sorted(Comparator.reverseOrder()).toList();
     for (String key : sortedKeys) {
-      System.out.print(" (\"" + key.replace("\"", "\\\"") + "\"");
+      // Escape backslashes before quotes, so that the backslash that escapes a quote is not
+      // itself escaped.
+      String escapedKey = key.replace("\\", "\\\\").replace("\"", "\\\"");
+      System.out.print(" (\"" + escapedKey + "\"");
       for (String ref : index.get(key)) {
         System.out.print(" \"" + ref + "\"");
       }
