@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head><title>Index</title></head>
+<body>
+<!-- CreateJavadocIndex removes every substring that matches the regular expression
+     "@[a-zA-Z.]+ " from the symbol, where it strips an annotation; test case
+     "annotation-in-symbol" shows the intended use.  The program applies the same
+     substitution to the reference, where an "@" never introduces an annotation.  The goal
+     file records the result, which a user is unlikely to want: a file name that contains
+     "@", letters, and a space loses that text, so the reference names a file that does not
+     exist.  Test case "at-sign-in-symbol" covers the same substitution on the symbol. -->
+<dl class="index">
+<dt><a href="p/Wi@Deprecated dget.html#ANNOTATION" class="member-name-link">ANNOTATION_TEXT_IN_REFERENCE</a> - Static variable in class p.Widget</dt>
+<dd>The reference contains text that looks like an annotation, which is removed.</dd>
+<dt><a href="p/Wi@dget.html#NO_SPACE" class="member-name-link">NO_SPACE_IN_REFERENCE</a> - Static variable in class p.Widget</dt>
+<dd>No space follows the "@", so nothing is removed.</dd>
+<dt><a href="p/Wi@ dget.html#NO_LETTER" class="member-name-link">NO_LETTER_IN_REFERENCE</a> - Static variable in class p.Widget</dt>
+<dd>No letter follows the "@", so nothing is removed.</dd>
+<dt><a href="p/Widget.html#PLAIN" class="member-name-link">NO_AT_SIGN_IN_REFERENCE</a> - Static variable in class p.Widget</dt>
+<dd>A reference that contains no "@", for comparison.</dd>
+</dl>
+</body>
+</html>

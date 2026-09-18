@@ -3,7 +3,9 @@
 <head><title>Index</title></head>
 <body>
 <!-- CreateJavadocIndex selects "a[class=member-name-link]" and "span[class=memberNameLink]",
-     which require the whole "class" attribute value to be exactly that one class name. -->
+     which require the whole "class" attribute value to be that one class name; a value that
+     contains a second class name is not selected.  Jsoup compares an attribute value
+     case-insensitively, so a "class" attribute value that differs only in case is selected. -->
 <dl class="index">
 <dt><a href="p/Widget.html#exact()" class="member-name-link">exact()</a> - Method in class p.Widget</dt>
 <dd>The "class" attribute value is exactly "member-name-link".</dd>

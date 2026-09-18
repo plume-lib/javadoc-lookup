@@ -1,6 +1,7 @@
 package org.plumelib.javadoclookup;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -61,7 +62,8 @@ final class CreateJavadocIndexTest {
   private static final boolean updateGoals = Boolean.getBoolean("updateGoals");
 
   /**
-   * Returns the value of the given system property.
+   * Returns the value of the given system property. {@code build.gradle.kts} sets every system
+   * property that these tests require, so they can be run only by Gradle.
    *
    * @param key the name of a system property
    * @return the value of the system property
@@ -70,7 +72,11 @@ final class CreateJavadocIndexTest {
   private static String requiredProperty(String key) {
     String result = System.getProperty(key);
     if (result == null) {
-      throw new Error("System property \"" + key + "\" is not set.");
+      throw new Error(
+          "System property \""
+              + key
+              + "\" is not set."
+              + "  build.gradle.kts sets it, so run these tests with: ./gradlew test");
     }
     return result;
   }
@@ -159,17 +165,24 @@ final class CreateJavadocIndexTest {
     }
     int status = process.exitValue();
 
-    checkGoal(
-        caseDir.resolve(STDOUT_GOAL_FILE),
-        normalize(Files.readString(stdoutFile, UTF_8), caseDir),
-        null,
-        testCase + ": standard output");
-    checkGoal(
-        caseDir.resolve(STDERR_GOAL_FILE),
-        normalize(Files.readString(stderrFile, UTF_8), caseDir),
-        "",
-        testCase + ": standard error");
-    checkGoal(caseDir.resolve(STATUS_GOAL_FILE), status + "\n", "0\n", testCase + ": exit status");
+    String stdout = normalize(Files.readString(stdoutFile, UTF_8), caseDir);
+    String stderr = normalize(Files.readString(stderrFile, UTF_8), caseDir);
+
+    // Check all three goal files even if the first differs.  When the program fails unexpectedly,
+    // its standard output differs too, and the stack trace on standard error is what explains the
+    // failure.
+    assertAll(
+        () ->
+            checkGoal(
+                caseDir.resolve(STDOUT_GOAL_FILE), stdout, null, testCase + ": standard output"),
+        () ->
+            checkGoal(caseDir.resolve(STDERR_GOAL_FILE), stderr, "", testCase + ": standard error"),
+        () ->
+            checkGoal(
+                caseDir.resolve(STATUS_GOAL_FILE),
+                status + "\n",
+                "0\n",
+                testCase + ": exit status"));
   }
 
   /**

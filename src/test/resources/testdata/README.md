@@ -63,8 +63,8 @@ what these tests exist to detect.
   `code-element-in-symbol`, `entity-in-symbol`, `html-markup-in-symbol`,
   `non-ascii-symbol`, `other-markup-in-symbol`, `quote-in-symbol`,
   `span-element-in-symbol`, `whitespace-in-symbol`.
-* The target of a reference: `href-external`, `href-missing`, `href-scheme`,
-  `quote-in-href`, `relative-href`.
+* The target of a reference: `at-sign-in-href`, `href-external`, `href-missing`,
+  `href-scheme`, `quote-in-href`, `relative-href`.
 * The ignored prefixes: `jdk-modules`, `jdk-modules-split`, `jgit`, `jgit-split`,
   `index-files-at-root`, `arg-dot-slash`, `arg-absolute`.
 * Command-line arguments: `arg-directory`, `arg-duplicate`,
@@ -93,6 +93,7 @@ test case has a comment in its input that says so.  The known problems are:
 | `href-missing` | An `<a>` element with no `href` attribute yields a reference to the directory that contains the index file, rather than a diagnostic. |
 | `arg-dot-slash` | The ignored prefix is not normalized, so for the argument `./api/index-all.html` the ignored prefix `file:./api/` matches none of the references, which are under `file:api/`. |
 | `at-sign-in-symbol` | Stripping an annotation leaves the space that followed it, and a symbol that is a lone `@` becomes the empty string. |
+| `at-sign-in-href` | The annotation-stripping substitution is applied to the reference as well as to the symbol, so a file name that contains `@`, letters, and a space yields a reference to a file that does not exist. |
 | `filelist-glob-no-match` | A glob that matches no file is silently ignored. |
 | `filelist-glob-in-directory-name` | A glob in a directory name is silently ignored. |
 | `filelist-glob-metacharacters` | A line is treated as a glob only if it contains `*`, so `?`, `[...]`, and `{...}` are not expanded even though `Files.newDirectoryStream` supports them. |

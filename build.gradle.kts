@@ -105,7 +105,13 @@ jacoco { toolVersion = libs.versions.jacoco.get() }
 // report would show no coverage at all for CreateJavadocIndex.  The "runtime" classifier of the
 // agent artifact is the agent jar itself; the default artifact merely contains a copy of the agent
 // jar as a resource, so it cannot be passed to "-javaagent".
-val jacocoSubprocessAgent = configurations.resolvable("jacocoSubprocessAgent")
+val jacocoSubprocessAgent =
+  configurations.resolvable("jacocoSubprocessAgent") {
+    // "-javaagent" takes a single jar, and the code below assumes that this configuration
+    // resolves to exactly one file.  The agent jar has no dependencies today, but making the
+    // configuration non-transitive keeps that true of any future version of JaCoCo.
+    isTransitive = false
+  }
 
 dependencies { "jacocoSubprocessAgent"(variantOf(libs.jacoco.agent) { classifier("runtime") }) }
 
