@@ -11,9 +11,11 @@ relative to the test case directory.
 
 ## Files in a test case directory
 
+<!-- markdownlint-disable MD013 -->
+
 | File | Meaning |
 | --- | --- |
-| `args.txt` | The command-line arguments, one per line.  Blank lines and lines that start with `#` are ignored.  In an argument, `${testcase}` is replaced by the absolute file name of the test case directory, which lets a test case pass an absolute file name.  If this file is absent, the program is run with no command-line arguments, which makes it read `.javadoc-index-files`. |
+| `args.txt` | The command-line arguments, one per line.  Blank lines and lines that start with `#` are ignored.  In an argument, `${testcase}` is replaced by the absolute file name of the test case directory, which lets a test case pass an absolute file name.  The file must list at least one argument; to run the program with no command-line arguments, omit the file, which makes the program read `.javadoc-index-files`. |
 | `.javadoc-index-files` | The list of API documentation files that the program reads when it is given no command-line arguments. |
 | `expected-stdout.txt` | Goal file for the program's standard output.  Required. |
 | `expected-stderr.txt` | Goal file for the program's standard error.  If absent, the program must write nothing to standard error. |
@@ -22,6 +24,8 @@ relative to the test case directory.
 All other files in a test case directory are input: HTML API documentation files,
 and stub files that exist only so that git records a directory whose mere existence
 affects the program's behavior.
+
+<!-- markdownlint-enable MD013 -->
 
 ## Normalization of the program's output
 
@@ -32,8 +36,8 @@ checked out nor on the exact version of the program:
 * The absolute file name of the test case directory is replaced by `${testcase}`.
 * Each stack trace is replaced by the single line `<TAB>at ...`.
 
-The goal files spell file names in the Unix style, with `/` as the separator, so the
-tests are skipped on Windows.
+The goal files spell file names in the Unix style, with `/` as the separator, so
+the tests are skipped on Windows.
 
 ## Updating the goal files
 
@@ -60,7 +64,7 @@ what these tests exist to detect.
   `non-ascii-symbol`, `other-markup-in-symbol`, `quote-in-symbol`,
   `span-element-in-symbol`, `whitespace-in-symbol`.
 * The target of a reference: `href-external`, `href-missing`, `href-scheme`,
-  `relative-href`.
+  `quote-in-href`, `relative-href`.
 * The ignored prefixes: `jdk-modules`, `jdk-modules-split`, `jgit`, `jgit-split`,
   `index-files-at-root`, `arg-dot-slash`, `arg-absolute`.
 * Command-line arguments: `arg-directory`, `arg-duplicate`,
@@ -76,9 +80,10 @@ A goal file was created by running the program, so it records what the program d
 today.  In several test cases that is not what the program ought to do.  Each such
 test case has a comment in its input that says so.  The known problems are:
 
+<!-- markdownlint-disable MD013 -->
+
 | Test case | Problem |
 | --- | --- |
-| `quote-in-symbol` | A backslash in a symbol is not escaped in the Emacs Lisp output. |
 | `entity-in-symbol` | Only the entities `&lt;` and `&gt;` are decoded, so a symbol can contain the literal text `&amp;` or `&nbsp;`. |
 | `code-element-in-symbol` | A `<code>` start tag that has an attribute is not stripped. |
 | `span-element-in-symbol` | A `<span>` start tag that lacks a `class` attribute is not stripped, although the matching `</span>` end tag is. |

@@ -20,9 +20,9 @@ exclude = { glob = [
   "**/*.svg",
   "**/*expected*",
   "**/COPYING",
-  "src/test/resources/end-to-end/**/*",
   "src/main/resources/specifications/jdk/*",
-  "src/test/resources/testdata/**/*",
+  "src/test/resources/end-to-end/**/*",
+  "src/test/resources/testdata/*/**",
   "tests/kvasir-tests/povray/*",
 ] }
 

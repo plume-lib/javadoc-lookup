@@ -123,6 +123,13 @@ public final class CreateJavadocIndexTest {
     command.add("-Dfile.encoding=UTF-8");
     command.add("-Dstdout.encoding=UTF-8");
     command.add("-Dstderr.encoding=UTF-8");
+    // Measure the coverage of the program, which the JaCoCo agent in the test JVM does not
+    // observe because the program runs in a subprocess.  See build.gradle.kts.
+    command.add(
+        "-javaagent:"
+            + requiredProperty("jacocoSubprocessAgentJar")
+            + "=destfile="
+            + Path.of(requiredProperty("jacocoSubprocessDir"), testCase + ".exec"));
     command.add("-cp");
     command.add(requiredProperty("mainRuntimeClasspath"));
     command.add(CreateJavadocIndex.class.getName());
@@ -165,6 +172,8 @@ public final class CreateJavadocIndexTest {
    * @param caseDir the test case directory
    * @return the command-line arguments
    * @throws IOException if the file cannot be read
+   * @throws AssertionError if the file exists but lists no argument, which is most likely a typo
+   *     rather than a request to run the program with no command-line arguments
    */
   private static List<String> readArgs(Path argsFile, Path caseDir) throws IOException {
     if (!Files.exists(argsFile)) {
@@ -176,6 +185,15 @@ public final class CreateJavadocIndexTest {
       if (!arg.isEmpty() && !arg.startsWith("#")) {
         result.add(arg.replace("${testcase}", caseDir.toString()));
       }
+    }
+    // Running the program with no command-line arguments makes it read ".javadoc-index-files",
+    // which is not what a file that lists no argument asks for.
+    if (result.isEmpty()) {
+      throw new AssertionError(
+          "File "
+              + argsFile
+              + " lists no command-line argument."
+              + "  To run the program with no command-line arguments, delete the file.");
     }
     return result;
   }

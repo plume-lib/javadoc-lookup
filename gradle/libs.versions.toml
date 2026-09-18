@@ -27,8 +27,9 @@ error-prone-core = { module = "com.google.errorprone:error_prone_core", version 
 # Version only:  Spotless resolves google-java-format itself.
 google-java-format = { module = "com.google.googlejavaformat:google-java-format", version.ref = "google-java-format" }
 
-# Version only:  for the JaCoCo plugin's `toolVersion`.
-jacoco = { module = "org.jacoco:org.jacoco.core", version.ref = "jacoco" }
+# The end-to-end tests pass the agent to `-javaagent`; see build.gradle.kts.  This entry also
+# supplies the JaCoCo plugin's `toolVersion`, via "libs.versions.jacoco".
+jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
 
 jsoup = { module = "org.jsoup:jsoup", version = "1.23.2" }
 

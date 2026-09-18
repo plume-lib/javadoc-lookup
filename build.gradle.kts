@@ -95,6 +95,34 @@ tasks.withType<JavaCompile>().configureEach {
   options.compilerArgs.add("-Xlint:all,-processing")
 }
 
+// Code coverage
+
+jacoco { toolVersion = libs.versions.jacoco.get() }
+
+// The JaCoCo agent that the "jacoco" plugin attaches to the test JVM does not observe the
+// subprocess in which each end-to-end test runs CreateJavadocIndex, so each test attaches the
+// agent to its own subprocess; see the "Test" configuration below.  Without that, the coverage
+// report would show no coverage at all for CreateJavadocIndex.  The "runtime" classifier of the
+// agent artifact is the agent jar itself; the default artifact merely contains a copy of the agent
+// jar as a resource, so it cannot be passed to "-javaagent".
+val jacocoSubprocessAgent = configurations.resolvable("jacocoSubprocessAgent")
+
+dependencies { "jacocoSubprocessAgent"(variantOf(libs.jacoco.agent) { classifier("runtime") }) }
+
+// The directory in which each end-to-end test writes the coverage data of its subprocess.
+val subprocessCoverageDir = layout.buildDirectory.dir("jacoco/subprocess")
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+  // The coverage of the subprocesses, in addition to the default coverage of the test JVM itself.
+  executionData(fileTree(subprocessCoverageDir.get().asFile) { include("*.exec") })
+
+  reports {
+    xml.required = false
+    csv.required = true // Output is written to build/reports/jacoco/test/jacocoTestReport.csv
+    html.required = true // Output is written to build/reports/jacoco/test/html/index.html
+  }
+}
+
 // Testing
 
 // Compilation always uses Java 21, but the tests run under various Java versions.  The
@@ -131,9 +159,22 @@ tasks.withType<Test>().configureEach {
 
   // Each end-to-end test runs CreateJavadocIndex in a subprocess.  Gradle sets the test worker's
   // "java.class.path" to Gradle's own bootstrap jar, so the test cannot use "java.class.path" as
-  // the subprocess's classpath.  Set the property in "doFirst" so that the runtime classpath is
-  // resolved only when the tests are actually run.
-  doFirst { systemProperty("mainRuntimeClasspath", sourceSets["main"].runtimeClasspath.asPath) }
+  // the subprocess's classpath.  Look up the classpath here, and resolve it ("asPath") only when
+  // the tests are actually run.  Reading "sourceSets" from a task action would capture the
+  // "Project" object, which the configuration cache forbids.
+  val mainRuntimeClasspath = sourceSets["main"].runtimeClasspath
+  // Likewise, look up the agent jar and the coverage directory here, and use them below.
+  val jacocoAgentJar: FileCollection = jacocoSubprocessAgent.get()
+  val coverageDir = subprocessCoverageDir.get().asFile
+
+  doFirst {
+    systemProperty("mainRuntimeClasspath", mainRuntimeClasspath.asPath)
+    systemProperty("jacocoSubprocessAgentJar", jacocoAgentJar.singleFile.absolutePath)
+    // Discard the coverage data of any previous run, which may be for different code.
+    coverageDir.deleteRecursively()
+    coverageDir.mkdirs()
+    systemProperty("jacocoSubprocessDir", coverageDir.absolutePath)
+  }
 
   // Run `./gradlew test -DupdateGoals=true` to overwrite the goal files with the program's
   // current output.  Always inspect the resulting diff before committing it.
@@ -161,16 +202,6 @@ tasks.withType<Test>().configureEach {
 
   // Generate the coverage report after the tests run.
   finalizedBy(tasks.named("jacocoTestReport"))
-}
-
-jacoco { toolVersion = libs.versions.jacoco.get() }
-
-tasks.named<JacocoReport>("jacocoTestReport") {
-  reports {
-    xml.required = false
-    csv.required = true // Output is written to build/reports/jacoco/test/jacocoTestReport.csv
-    html.required = true // Output is written to build/reports/jacoco/test/html/index.html
-  }
 }
 
 // Code formatting
