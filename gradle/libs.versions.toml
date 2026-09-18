@@ -10,6 +10,8 @@ ktfmt = "0.64"
 
 pmd = "7.27.0"
 
+junit-jupiter = "6.1.2"
+
 [libraries]
 
 # Some entries below are not dependencies.  Each such entry exists so that a dependency-update tool
@@ -25,12 +27,17 @@ error-prone-core = { module = "com.google.errorprone:error_prone_core", version 
 # Version only:  Spotless resolves google-java-format itself.
 google-java-format = { module = "com.google.googlejavaformat:google-java-format", version.ref = "google-java-format" }
 
-# Version only:  for the JaCoCo plugin's `toolVersion`.
-jacoco = { module = "org.jacoco:org.jacoco.core", version.ref = "jacoco" }
+# The end-to-end tests pass the agent to `-javaagent`; see build.gradle.kts.  This entry also
+# supplies the JaCoCo plugin's `toolVersion`, via "libs.versions.jacoco".
+jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
 
 jsoup = { module = "org.jsoup:jsoup", version = "1.23.2" }
 
 jsr305 = { module = "com.google.code.findbugs:jsr305", version = "3.0.2" }
+
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }
+
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 
 # Version only:  Spotless resolves ktfmt itself.
 ktfmt = { module = "com.facebook:ktfmt", version.ref = "ktfmt" }

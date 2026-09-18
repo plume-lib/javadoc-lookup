@@ -1,0 +1,35 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: api/index-all.html
+(setq javadoc-html-refs '(
+ ("y()" "file:api/com/example/Point.html#y()")
+ ("x()" "file:api/com/example/Point.html#x()")
+ ("values()" "file:api/com/example/Color.html#values()")
+ ("valueOf(String)" "file:api/com/example/Color.html#valueOf(java.lang.String)")
+ ("value()" "file:api/com/example/Marker.html#value()")
+ ("toString()" "file:api/com/example/Point.html#toString()")
+ ("name" "file:api/com/example/Widget.html#name")
+ ("hashCode()" "file:api/com/example/Point.html#hashCode()")
+ ("equals(Object)" "file:api/com/example/Point.html#equals(java.lang.Object)")
+ ("compare(T, T)" "file:api/com/example/Widget.html#compare(T,T)")
+ ("compare(List<? extends T>)" "file:api/com/example/Widget.html#compare(java.util.List)")
+ ("area()" "file:api/com/example/Shape.html#area()")
+ ("WidgetException()" "file:api/com/example/WidgetException.html#%3Cinit%3E()")
+ ("WidgetException" "file:api/com/example/WidgetException.html")
+ ("Widget<T>" "file:api/com/example/Widget.html")
+ ("Widget.Inner" "file:api/com/example/Widget.Inner.html")
+ ("Widget()" "file:api/com/example/Widget.html#%3Cinit%3E()")
+ ("Widget" "file:api/com/example/Widget.html")
+ ("Shape" "file:api/com/example/Shape.html")
+ ("RED" "file:api/com/example/Color.html#RED")
+ ("Point(int, int)" "file:api/com/example/Point.html#%3Cinit%3E(int,int)")
+ ("Point" "file:api/com/example/Point.html")
+ ("Marker" "file:api/com/example/Marker.html")
+ ("Inner()" "file:api/com/example/Widget.Inner.html#%3Cinit%3E()")
+ ("GREEN" "file:api/com/example/Color.html#GREEN")
+ ("Color" "file:api/com/example/Color.html")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:api/"))
+))

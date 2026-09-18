@@ -1,0 +1,11 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: alpha/index-all.html
+(setq javadoc-html-refs '(
+ ("area()" "file:alpha/p/Alpha.html#area()")
+ ("Alpha" "file:alpha/p/Alpha.html")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:alpha/"))
+))

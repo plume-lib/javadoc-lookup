@@ -22,6 +22,7 @@ exclude = { glob = [
   "**/COPYING",
   "src/main/resources/specifications/jdk/*",
   "src/test/resources/end-to-end/**/*",
+  "src/test/resources/testdata/*/**",
   "tests/kvasir-tests/povray/*",
 ] }
 

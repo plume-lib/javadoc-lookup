@@ -1,0 +1,2 @@
+beta/index-all.html
+alpha/index-all.html

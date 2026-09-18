@@ -1,0 +1,16 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: api/index-all.html
+(setq javadoc-html-refs '(
+ ("SomeType" "file:api/p/SomeType.html")
+ ("SomeInterface" "file:api/p/SomeInterface.html")
+ ("SomeClass" "file:api/p/SomeClass.html")
+ ("OldEnum" "file:api/p/OldEnum.html")
+ ("OldAnnotation" "file:api/p/OldAnnotation.html")
+ ("NewEnum" "file:api/p/NewEnum.html")
+ ("NewAnnotation" "file:api/p/NewAnnotation.html")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:api/"))
+))

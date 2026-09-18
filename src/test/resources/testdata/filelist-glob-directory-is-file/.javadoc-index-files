@@ -1,0 +1,4 @@
+# The directory part of this glob, "notes.txt", exists but is not a directory.
+notes.txt/index-*.html
+# CreateJavadocIndex exits before it reads the line below.
+api/index-all.html

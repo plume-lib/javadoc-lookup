@@ -1,0 +1,8 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: 
+(setq javadoc-html-refs '(
+))
+
+(setq javadoc-ignored-prefixes (list
+))
