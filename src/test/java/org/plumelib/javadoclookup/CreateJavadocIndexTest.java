@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -26,10 +27,10 @@ import org.junit.jupiter.params.provider.MethodSource;
  * file names in the goal files are relative to the test case directory. See {@code
  * src/test/resources/testdata/README.md} for the layout of a test case directory.
  */
-public final class CreateJavadocIndexTest {
+final class CreateJavadocIndexTest {
 
   /** Creates a new CreateJavadocIndexTest. */
-  public CreateJavadocIndexTest() {}
+  CreateJavadocIndexTest() {}
 
   /** The name of the file, in a test case directory, that holds the command-line arguments. */
   private static final String ARGS_FILE = "args.txt";
@@ -45,6 +46,13 @@ public final class CreateJavadocIndexTest {
 
   /** How long to wait for the program to finish, in seconds. */
   private static final long TIMEOUT_SECONDS = 120;
+
+  /**
+   * The environment variables that supply command-line arguments to the java launcher. The test
+   * unsets them so that they affect neither the program's behavior nor its output.
+   */
+  private static final Set<String> JVM_OPTIONS_ENV_VARS =
+      Set.of("JAVA_TOOL_OPTIONS", "JDK_JAVA_OPTIONS", "_JAVA_OPTIONS");
 
   /**
    * If true, overwrite the goal files with the program's current output rather than comparing the
@@ -105,8 +113,7 @@ public final class CreateJavadocIndexTest {
    */
   @ParameterizedTest(name = "{0}")
   @MethodSource("testCases")
-  public void endToEnd(String testCase, @TempDir Path tempDir)
-      throws IOException, InterruptedException {
+  void endToEnd(String testCase, @TempDir Path tempDir) throws IOException, InterruptedException {
     // The goal files spell file names in the Unix style, with "/" as the separator.
     assumeTrue(File.separatorChar == '/', "The goal files use Unix file name syntax.");
 
@@ -135,12 +142,16 @@ public final class CreateJavadocIndexTest {
     command.add(CreateJavadocIndex.class.getName());
     command.addAll(readArgs(caseDir.resolve(ARGS_FILE), caseDir));
 
-    Process process =
+    ProcessBuilder processBuilder =
         new ProcessBuilder(command)
             .directory(caseDir.toFile())
             .redirectOutput(stdoutFile.toFile())
-            .redirectError(stderrFile.toFile())
-            .start();
+            .redirectError(stderrFile.toFile());
+    // The java launcher writes a line such as "Picked up JAVA_TOOL_OPTIONS: ..." to standard
+    // error if any of these environment variables is set, which would differ from the goal file.
+    // Removing them also prevents them from changing the program's behavior.
+    processBuilder.environment().keySet().removeAll(JVM_OPTIONS_ENV_VARS);
+    Process process = processBuilder.start();
     if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
       process.destroyForcibly();
       throw new AssertionError(
@@ -199,8 +210,11 @@ public final class CreateJavadocIndexTest {
   }
 
   /**
-   * Makes the program's output independent of where the repository is checked out and of what
-   * version of the program and its dependencies is being tested.
+   * Makes the program's output independent of where the repository is checked out and of the line
+   * numbers in stack traces. The result still depends on the behavior of the program and of its
+   * dependencies; for example, some goal files contain text that jsoup produced, so upgrading jsoup
+   * may require the goal files to be updated. That is intended: a goal file changes exactly when
+   * the program's user-visible output changes.
    *
    * @param output the program's standard output or standard error
    * @param caseDir the test case directory, which was the program's current directory

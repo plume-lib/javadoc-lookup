@@ -246,8 +246,6 @@ pmd {
   isConsoleOutput = true
 }
 
-tasks.named<Pmd>("pmdTest") { enabled = false }
-
 // Checker Framework pluggable type-checking
 
 checkerFramework {
