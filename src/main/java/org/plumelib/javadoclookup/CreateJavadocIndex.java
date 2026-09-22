@@ -44,7 +44,7 @@ import org.jsoup.select.Elements;
  *   org.plumelib.javadoclookup.CreateJavadocIndex &gt; ~/.javadoc-index.el
  * </pre>
  */
-@SuppressWarnings("PMD.LooseCoupling") // `Elements`
+// @SuppressWarnings("PMD.LooseCoupling") // `Elements`
 public final class CreateJavadocIndex {
 
   /** If true, output diagnostic logging. */
@@ -82,7 +82,7 @@ public final class CreateJavadocIndex {
       if (DEBUG) {
         System.err.println("About to parse: " + indexFileName);
       }
-      @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+      // @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
       File indexFile = new File(indexFileName);
       Document doc = Jsoup.parse(indexFile, "UTF-8");
       Path dir = indexFile.toPath().getParent();
@@ -211,7 +211,7 @@ public final class CreateJavadocIndex {
    * @param href the value, a Java API HTML file URL
    * @param dir the relative directory for the value
    */
-  @SuppressWarnings("PMD.AvoidReassigningParameters")
+  // @SuppressWarnings("PMD.AvoidReassigningParameters")
   private static void addToIndex(String item, String href, Path dir) {
     if (href.contains("http:") || href.contains("https:")) {
       return;
@@ -244,7 +244,7 @@ public final class CreateJavadocIndex {
    */
   @SuppressWarnings({
     "PMD.ExceptionAsFlowControl",
-    "PMD.PreserveStackTrace" // PMD bug: triggers for "throw ex.getCause()"
+    // "PMD.PreserveStackTrace" // PMD bug: triggers for "throw ex.getCause()"
   })
   private static List<String> readAndGlobFiles(String filename) {
 
