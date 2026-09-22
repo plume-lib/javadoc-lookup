@@ -4,11 +4,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ import org.jsoup.select.Elements;
 // Handles only globs within a single directory.
 
 /**
- * CreateJavadocIndex reads {@code index-all.html} API documentation files (typically {@code
- * index-all.html} files) and outputs an index that Emacs can use for looking up Java documentation.
+ * CreateJavadocIndex reads API documentation files (typically {@code index-all.html} files) and
+ * outputs an index that Emacs can use for looking up Java documentation.
  *
  * <p>With no arguments, it reads file {@code ~/.javadoc-index-files}, which should contain a list
  * of API documentation files, one per line. Blank lines are permitted in the file, as are comment
@@ -63,14 +63,14 @@ public final class CreateJavadocIndex {
   }
 
   /**
-   * Scan the specified file(s) for API documentation index and print the corresponding entries.
+   * Scan the specified file(s) for an API documentation index and print the corresponding entries.
    *
    * @param args command-line arguments: {@code index-all.html} files
    * @throws IOException if there is a problem reading a file
    */
   public static void main(String[] args) throws IOException {
 
-    // If no arguments supplied, use the contents of file ~/.javadoc-index-files .
+    // If no arguments are supplied, use the contents of file ~/.javadoc-index-files .
     List<String> indexFileNames;
     if (args.length != 0) {
       indexFileNames = Arrays.asList(args);
@@ -81,7 +81,7 @@ public final class CreateJavadocIndex {
 
     for (String indexFileName : indexFileNames) {
       if (debug) {
-        System.out.println("About to parse: " + indexFileName);
+        System.err.println("About to parse: " + indexFileName);
       }
       File indexFile = new File(indexFileName);
       Document doc = Jsoup.parse(indexFile, "UTF-8");
@@ -114,8 +114,8 @@ public final class CreateJavadocIndex {
       for (Element atitle : atitleElts) {
         String title = atitle.attributes().get("title");
         if (debug) {
-          System.out.println("atitle = " + atitle);
-          System.out.println("  title = " + title);
+          System.err.println("atitle = " + atitle);
+          System.err.println("  title = " + title);
         }
         if (title.startsWith("annotation in ")
             || title.startsWith("annotation interface in ")
@@ -177,7 +177,7 @@ public final class CreateJavadocIndex {
         System.exit(1);
       }
     }
-    // The API documentation for Jgit is within a "org.eclipse.jgit" subdirectory.
+    // The API documentation for JGit is within an "org.eclipse.jgit" subdirectory.
     Path orgEclipseJgitSubdirectory = ignoredPrefix.resolve("org.eclipse.jgit");
     if (Files.isDirectory(orgEclipseJgitSubdirectory)) {
       ignoredPrefix = orgEclipseJgitSubdirectory;
@@ -225,11 +225,9 @@ public final class CreateJavadocIndex {
     item = item.replaceAll("^@", "");
 
     String fileHref = "file:" + dir.resolve(href).normalize();
-    // This was needed for Javadoc in Java 8 and less.
-    // fileHref = fileHref.replaceAll("[()]", "-");
     fileHref = fileHref.replaceAll("@[a-zA-Z.]+ ", "");
     if (debug) {
-      System.out.println("    fileHref: " + fileHref);
+      System.err.println("    fileHref: " + fileHref);
     }
 
     Set<String> hrefs = index.computeIfAbsent(item, key -> new TreeSet<>());
@@ -240,7 +238,7 @@ public final class CreateJavadocIndex {
    * Read lines from the given file, each of which is a comment or a filename, possibly including a
    * "*" glob in the file name. Globs in directory names are not handled.
    *
-   * @param filename the file that contains possibly-globbed filenames
+   * @param filename the file that contains possibly globbed filenames
    * @return the filenames in the given file, with globs expanded
    */
   @SuppressWarnings("PMD.ExceptionAsFlowControl")
@@ -252,7 +250,7 @@ public final class CreateJavadocIndex {
 
       for (String line_orig = br.readLine(); line_orig != null; line_orig = br.readLine()) {
         if (debug) {
-          System.out.println("readAndGlobFiles: line = " + line_orig);
+          System.err.println("readAndGlobFiles: line = " + line_orig);
         }
         String line = line_orig.trim();
         if (line.isEmpty() || line.startsWith("#")) {
@@ -261,7 +259,7 @@ public final class CreateJavadocIndex {
 
         int asteriskPos = line.indexOf('*');
         if (debug) {
-          System.out.println("asteriskPos = " + asteriskPos);
+          System.err.println("asteriskPos = " + asteriskPos);
         }
         if (asteriskPos == -1) {
           // This line is not a glob, but the file might not exist.
@@ -274,14 +272,14 @@ public final class CreateJavadocIndex {
           // This line is a glob
           int slashPos = line.lastIndexOf('/', asteriskPos);
           if (slashPos == -1) {
-            System.err.println("glob pattern contains no directory slash");
-            System.exit(-1);
+            System.err.println("glob pattern contains no directory slash: " + line);
+            System.exit(1);
           }
           String globDirName = line.substring(0, slashPos);
           Path globDirPath = Paths.get(globDirName);
           String globFileName = line.substring(slashPos + 1);
           if (debug) {
-            System.out.printf(
+            System.err.printf(
                 "slashPos = %d; newDirectoryStream(%s, %s)%n", slashPos, globDirName, globFileName);
           }
           if (Files.exists(globDirPath)) {
@@ -300,14 +298,14 @@ public final class CreateJavadocIndex {
         }
       }
 
-      //  Sorting makes the results more deterministic, easier to compare.
+      // Sorting makes the results more deterministic and easier to compare.
       Collections.sort(result);
       return result;
 
-    } catch (FileNotFoundException e) {
+    } catch (NoSuchFileException e) {
       System.err.println("File not found: " + filename);
       System.exit(1);
-      return new ArrayList<>(); // dead code, but Java compiler requires it
+      throw new Error(); // dead code, but the Java compiler requires it
     } catch (IOException e) {
       System.err.println("Trouble while reading file " + filename + " : " + e.getMessage());
       System.exit(1);
