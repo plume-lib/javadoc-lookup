@@ -44,10 +44,11 @@ import org.jsoup.select.Elements;
  *   org.plumelib.javadoclookup.CreateJavadocIndex &gt; ~/.javadoc-index.el
  * </pre>
  */
+// @SuppressWarnings("PMD.LooseCoupling") // `Elements`
 public final class CreateJavadocIndex {
 
   /** If true, output diagnostic logging. */
-  private static final boolean debug = false;
+  private static final boolean DEBUG = false;
 
   /** The index from symbols to Javadoc URLs. */
   private static Map<String, Set<String>> index = new HashMap<>();
@@ -57,7 +58,7 @@ public final class CreateJavadocIndex {
 
   /** This class is a collection of methods; it does not represent anything. */
   private CreateJavadocIndex() {
-    throw new Error("do not instantiate");
+    throw new UnsupportedOperationException("do not instantiate");
   }
 
   /**
@@ -78,9 +79,10 @@ public final class CreateJavadocIndex {
     }
 
     for (String indexFileName : indexFileNames) {
-      if (debug) {
+      if (DEBUG) {
         System.err.println("About to parse: " + indexFileName);
       }
+      // @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
       File indexFile = new File(indexFileName);
       Document doc = Jsoup.parse(indexFile, "UTF-8");
       Path dir = indexFile.toPath().getParent();
@@ -111,7 +113,7 @@ public final class CreateJavadocIndex {
       Elements atitleElts = doc.select("a[title]");
       for (Element atitle : atitleElts) {
         String title = atitle.attributes().get("title");
-        if (debug) {
+        if (DEBUG) {
           System.err.println("atitle = " + atitle);
           System.err.println("  title = " + title);
         }
@@ -209,6 +211,7 @@ public final class CreateJavadocIndex {
    * @param href the value, a Java API HTML file URL
    * @param dir the relative directory for the value
    */
+  // @SuppressWarnings("PMD.AvoidReassigningParameters")
   private static void addToIndex(String item, String href, Path dir) {
     if (href.contains("http:") || href.contains("https:")) {
       return;
@@ -224,7 +227,7 @@ public final class CreateJavadocIndex {
 
     String fileHref = "file:" + dir.resolve(href).normalize();
     fileHref = fileHref.replaceAll("@[a-zA-Z.]+ ", "");
-    if (debug) {
+    if (DEBUG) {
       System.err.println("    fileHref: " + fileHref);
     }
 
@@ -239,24 +242,27 @@ public final class CreateJavadocIndex {
    * @param filename the file that contains possibly globbed filenames
    * @return the filenames in the given file, with globs expanded
    */
-  @SuppressWarnings("PMD.ExceptionAsFlowControl")
+  @SuppressWarnings({
+    "PMD.ExceptionAsFlowControl",
+    // "PMD.PreserveStackTrace" // PMD bug: triggers for "throw ex.getCause()"
+  })
   private static List<String> readAndGlobFiles(String filename) {
 
     try (BufferedReader br = Files.newBufferedReader(Paths.get(filename), UTF_8)) {
 
       List<String> result = new ArrayList<>();
 
-      for (String line_orig = br.readLine(); line_orig != null; line_orig = br.readLine()) {
-        if (debug) {
-          System.err.println("readAndGlobFiles: line = " + line_orig);
+      for (String lineOrig = br.readLine(); lineOrig != null; lineOrig = br.readLine()) {
+        if (DEBUG) {
+          System.err.println("readAndGlobFiles: line = " + lineOrig);
         }
-        String line = line_orig.trim();
+        String line = lineOrig.trim();
         if (line.isEmpty() || line.startsWith("#")) {
           continue;
         }
 
         int asteriskPos = line.indexOf('*');
-        if (debug) {
+        if (DEBUG) {
           System.err.println("asteriskPos = " + asteriskPos);
         }
         if (asteriskPos == -1) {
@@ -276,7 +282,7 @@ public final class CreateJavadocIndex {
           String globDirName = line.substring(0, slashPos);
           Path globDirPath = Paths.get(globDirName);
           String globFileName = line.substring(slashPos + 1);
-          if (debug) {
+          if (DEBUG) {
             System.err.printf(
                 "slashPos = %d; newDirectoryStream(%s, %s)%n", slashPos, globDirName, globFileName);
           }
@@ -303,11 +309,11 @@ public final class CreateJavadocIndex {
     } catch (NoSuchFileException e) {
       System.err.println("File not found: " + filename);
       System.exit(1);
-      throw new Error(); // dead code, but the Java compiler requires it
+      throw new Error(e); // dead code, but the Java compiler requires it
     } catch (IOException e) {
       System.err.println("Trouble while reading file " + filename + " : " + e.getMessage());
       System.exit(1);
-      throw new Error(); // dead code, but the Java compiler requires it
+      throw new Error(e); // dead code, but the Java compiler requires it
     }
   }
 }
