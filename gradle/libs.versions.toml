@@ -8,7 +8,7 @@ jacoco = "0.8.15"
 
 ktfmt = "0.64"
 
-pmd = "7.27.0"
+pmd = "7.28.0"
 
 junit-jupiter = "6.1.2"
 
@@ -51,7 +51,7 @@ require-javadoc = { module = "org.plumelib:require-javadoc", version = "3.0.0" }
 
 [plugins]
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.10.2" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.10.3" }
 
 com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.6.1" }
 
