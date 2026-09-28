@@ -1,0 +1,20 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: api/index-all.html
+(setq javadoc-html-refs '(
+ ("Éclair" "file:api/p/%C3%89clair.html")
+ ("zeta" "file:api/p/Widget.html#zeta")
+ ("fg" "file:api/p/Widget.html#fg")
+ ("f()" "file:api/p/Widget.html#f()")
+ ("duplicated" "file:api/p/Abc.html#duplicated" "file:api/p/Zed.html#duplicated" "file:api/p/abc.html#duplicated")
+ ("alpha" "file:api/p/Widget.html#alpha")
+ ("_leadingUnderscore" "file:api/p/Widget.html#UNDERSCORE")
+ ("Zeta" "file:api/p/Widget.html#Zeta")
+ ("VERSION_2" "file:api/p/Widget.html#V2")
+ ("VERSION_10" "file:api/p/Widget.html#V10")
+ ("Alpha" "file:api/p/Widget.html#Alpha")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:api/"))
+))

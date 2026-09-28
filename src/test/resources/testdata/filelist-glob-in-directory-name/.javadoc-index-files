@@ -1,0 +1,3 @@
+# CreateJavadocIndex handles globs only within a single directory, not in a
+# directory name.  Both "api/en/index-all.html" and "api/fr/index-all.html" exist.
+api/*/index-all.html

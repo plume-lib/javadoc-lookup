@@ -1,0 +1,5 @@
+In api/index-all.html, no <a href=...> in: <span class="memberNameLink">name</span>
+parent = <dt>
+ <span class="memberNameLink">name</span> - Variable in class p.Widget
+</dt>
+CreateJavadocIndex FAILED; exiting.

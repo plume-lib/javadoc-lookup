@@ -1,0 +1,7 @@
+# CreateJavadocIndex decides that a line is a glob by looking for "*", but it passes the
+# line to Files.newDirectoryStream, whose glob syntax also includes "?", "[...]", and
+# "{...}".  A line that uses only those other metacharacters is treated as a file name.
+api/index-?.html
+api/index-[12].html
+api/index-{1,2}.html
+api/index-*.html

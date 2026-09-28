@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head><title>Index</title></head>
+<body>
+<!-- CreateJavadocIndex ignores a reference whose href contains "http:" or "https:", as
+     test case "href-external" shows.  This file exercises the other ways that an href can
+     denote a resource that is not a local file.  The goal file records that each of them
+     yields a "file:" reference to a file that does not exist.  A protocol-relative URL is
+     the worst case: Path.resolve treats it as an absolute file name, so the reference
+     does not even mention the directory that contains the index file. -->
+<dl class="index">
+<dt><a href="HTTPS://EXAMPLE.COM/p/Upper.html" title="class in p">UpperCaseScheme</a> - Class in p</dt>
+<dd>An uppercase scheme name.  URL schemes are case-insensitive.</dd>
+<dt><a href="Https://example.com/p/Mixed.html" title="class in p">MixedCaseScheme</a> - Class in p</dt>
+<dd>A mixed-case scheme name.</dd>
+<dt><a href="//example.com/p/Protocol.html" title="class in p">ProtocolRelative</a> - Class in p</dt>
+<dd>A protocol-relative URL, which names the same server as the containing page.</dd>
+<dt><a href="ftp://example.com/p/Ftp.html" title="class in p">FtpScheme</a> - Class in p</dt>
+<dd>A scheme other than "http" and "https".</dd>
+<dt><a href="mailto:nobody@example.com" title="class in p">MailtoScheme</a> - Class in p</dt>
+<dd>A "mailto" URL, which has no path at all.</dd>
+<dt><a href="file:///elsewhere/p/Absolute.html" title="class in p">FileScheme</a> - Class in p</dt>
+<dd>A "file" URL, which is already in the form that the output uses.</dd>
+<dt><a href="p/Local.html" title="class in p">Local</a> - Class in p</dt>
+<dd>A local file, for comparison.</dd>
+</dl>
+</body>
+</html>

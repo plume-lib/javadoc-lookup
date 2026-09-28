@@ -1,0 +1,5 @@
+# The "api" directory exists but contains no file whose name matches this glob.
+# CreateJavadocIndex reports a glob whose directory does not exist (see test case
+# "filelist-missing-directory"), but the goal file records that it says nothing about a
+# glob that matches no file.
+api/index-*.html

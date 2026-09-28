@@ -1,0 +1,13 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: api/index-all.html
+(setq javadoc-html-refs '(
+ ("NO_SPACE_IN_REFERENCE" "file:api/p/Wi@dget.html#NO_SPACE")
+ ("NO_LETTER_IN_REFERENCE" "file:api/p/Wi@ dget.html#NO_LETTER")
+ ("NO_AT_SIGN_IN_REFERENCE" "file:api/p/Widget.html#PLAIN")
+ ("ANNOTATION_TEXT_IN_REFERENCE" "file:api/p/Widget.html#ANNOTATION")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:api/"))
+))

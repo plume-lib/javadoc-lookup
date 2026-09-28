@@ -1,0 +1,1 @@
+This stub file is never read by CreateJavadocIndex; it exists so that git records its directory.

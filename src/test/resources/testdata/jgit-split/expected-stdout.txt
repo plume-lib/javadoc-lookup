@@ -1,0 +1,11 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: api/index-files/index-1.html
+(setq javadoc-html-refs '(
+ ("getConfig()" "file:api/org.eclipse.jgit/org/eclipse/jgit/lib/Repository.html#getConfig()")
+ ("Repository" "file:api/org.eclipse.jgit/org/eclipse/jgit/lib/Repository.html")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:api/org.eclipse.jgit/"))
+))

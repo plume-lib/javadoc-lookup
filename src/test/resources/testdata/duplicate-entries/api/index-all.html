@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head><title>Index</title></head>
+<body>
+<!-- CreateJavadocIndex stores the references for a symbol in a set, so it discards a
+     reference that it has already recorded for that symbol. -->
+<dl class="index">
+<dt><a href="p/Widget.html" title="class in p">Widget</a> - Class in p</dt>
+<dd>A class.  Javadoc writes this same link again below, in the "All Classes" list.</dd>
+<dt><a href="p/Widget.html" title="class in p">Widget</a> - Class in p</dt>
+<dd>The same symbol and the same reference, which is recorded only once.</dd>
+<dt><span class="memberNameLink"><a href="p/Widget.html#area()">area()</a></span> - Method in class p.Widget</dt>
+<dd>A method, written in the javadoc 8 style.</dd>
+<dt><a href="p/Widget.html#area()" class="member-name-link">area()</a> - Method in class p.Widget</dt>
+<dd>The same symbol and the same reference, written in the javadoc 17 style.  A file
+that contains both styles yields one reference, not two.</dd>
+<dt><a href="p/Gadget.html#area()" class="member-name-link">area()</a> - Method in class p.Gadget</dt>
+<dd>The same symbol with a different reference, which is recorded separately.</dd>
+<dt><a href="p/Widget.html#area()" title="class in p">area()</a> - Class in p</dt>
+<dd>The same symbol and the same reference, from an "a" element that has a "title"
+attribute rather than a "class" attribute.</dd>
+</dl>
+</body>
+</html>

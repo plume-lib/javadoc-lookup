@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head><title>Index</title></head>
+<body>
+<!-- CreateJavadocIndex removes every substring that matches the regular expression
+     "@[a-zA-Z.]+ ", and then removes a leading "@".  Test case "annotation-in-symbol"
+     shows the intended uses of those two substitutions; this file shows what the
+     substitutions do to an "@" that does not introduce an annotation.  The goal file
+     records two results that a user is unlikely to want: removing an annotation from an
+     array type leaves the space that preceded the "[]", and a symbol that is a lone "@"
+     becomes the empty string. -->
+<dl class="index">
+<dt><a href="p/Widget.html#two()" class="member-name-link">two(@Deprecated @Nullable Object)</a> - Method in class p.Widget</dt>
+<dd>Two annotations on one formal parameter; both are removed.</dd>
+<dt><a href="p/Widget.html#EMAIL" class="member-name-link">EMAIL@EXAMPLE.COM</a> - Static variable in class p.Widget</dt>
+<dd>No space follows the "@", so nothing is removed.</dd>
+<dt><a href="p/Widget.html#SPACE" class="member-name-link">AT@ SIGN</a> - Static variable in class p.Widget</dt>
+<dd>No letter follows the "@", so nothing is removed.</dd>
+<dt><a href="p/Widget.html#ONLY" class="member-name-link">@</a> - Static variable in class p.Widget</dt>
+<dd>The symbol is a lone "@", which the leading-"@" substitution removes.</dd>
+<dt><a href="p/Widget.html#TWICE" class="member-name-link">@@TWICE</a> - Static variable in class p.Widget</dt>
+<dd>Only the first of two leading "@" characters is removed.</dd>
+<dt><a href="p/Widget.html#at(java.lang.String)" class="member-name-link">at(String @NonNull [])</a> - Method in class p.Widget</dt>
+<dd>An annotation on an array type, which javadoc writes after the element type.</dd>
+</dl>
+</body>
+</html>

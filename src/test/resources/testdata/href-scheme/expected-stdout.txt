@@ -1,0 +1,16 @@
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: api/index-all.html
+(setq javadoc-html-refs '(
+ ("UpperCaseScheme" "file:api/HTTPS:/EXAMPLE.COM/p/Upper.html")
+ ("ProtocolRelative" "file:/example.com/p/Protocol.html")
+ ("MixedCaseScheme" "file:api/Https:/example.com/p/Mixed.html")
+ ("MailtoScheme" "file:api/mailto:nobody@example.com")
+ ("Local" "file:api/p/Local.html")
+ ("FtpScheme" "file:api/ftp:/example.com/p/Ftp.html")
+ ("FileScheme" "file:api/file:/elsewhere/p/Absolute.html")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:api/"))
+))

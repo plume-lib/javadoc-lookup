@@ -1,0 +1,8 @@
+# This file is read when CreateJavadocIndex is run with no command-line arguments.
+# Blank lines and lines that start with "#" are ignored.
+
+beta/index-all.html
+  alpha/index-all.html
+
+# The two file names above are listed in reverse alphabetical order, to show that
+# CreateJavadocIndex sorts them.
