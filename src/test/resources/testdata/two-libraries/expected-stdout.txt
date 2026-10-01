@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; For use by Emacs function javadoc-lookup.
 ;; Created by CreateJavadocIndex.
 ;; arguments: beta/index-all.html alpha/index-all.html

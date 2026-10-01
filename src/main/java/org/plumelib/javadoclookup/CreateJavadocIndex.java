@@ -132,6 +132,7 @@ public final class CreateJavadocIndex {
       }
     }
 
+    System.out.println(";; -*- lexical-binding: t; -*-");
     System.out.println(";; For use by Emacs function javadoc-lookup.");
     System.out.println(";; Created by CreateJavadocIndex.");
     System.out.println(";; arguments: " + String.join(" ", indexFileNames));
