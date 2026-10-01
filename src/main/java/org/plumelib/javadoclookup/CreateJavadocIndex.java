@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jsoup.Jsoup;
@@ -51,10 +52,10 @@ public final class CreateJavadocIndex {
   private static final boolean DEBUG = false;
 
   /** The index from symbols to Javadoc URLs. */
-  private static Map<String, Set<String>> index = new HashMap<>();
+  private static @Modifiable Map<String, @Modifiable Set<String>> index = new HashMap<>();
 
   /** The ignored prefixes (base directories for Javadoc files). */
-  private static Set<String> ignoredPrefixes = new TreeSet<>();
+  private static @Modifiable Set<String> ignoredPrefixes = new TreeSet<>();
 
   /** This class is a collection of methods; it does not represent anything. */
   private CreateJavadocIndex() {
