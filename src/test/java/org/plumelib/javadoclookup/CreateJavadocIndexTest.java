@@ -11,9 +11,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -156,7 +158,10 @@ final class CreateJavadocIndexTest {
     // The java launcher writes a line such as "Picked up JAVA_TOOL_OPTIONS: ..." to standard
     // error if any of these environment variables is set, which would differ from the goal file.
     // Removing them also prevents them from changing the program's behavior.
-    processBuilder.environment().keySet().removeAll(JVM_OPTIONS_ENV_VARS);
+    @SuppressWarnings("modifiability:assignment") // ProcessBuilder.environment() is modifiable
+    @Modifiable
+    Map<String, String> env = processBuilder.environment();
+    env.keySet().removeAll(JVM_OPTIONS_ENV_VARS);
     Process process = processBuilder.start();
     if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
       process.destroyForcibly();
