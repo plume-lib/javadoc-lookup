@@ -158,9 +158,7 @@ final class CreateJavadocIndexTest {
     // The java launcher writes a line such as "Picked up JAVA_TOOL_OPTIONS: ..." to standard
     // error if any of these environment variables is set, which would differ from the goal file.
     // Removing them also prevents them from changing the program's behavior.
-    @SuppressWarnings("modifiability:assignment") // ProcessBuilder.environment() is modifiable
-    @Modifiable
-    Map<String, String> env = processBuilder.environment();
+    @Modifiable Map<String, String> env = processBuilder.environment();
     env.keySet().removeAll(JVM_OPTIONS_ENV_VARS);
     Process process = processBuilder.start();
     if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
