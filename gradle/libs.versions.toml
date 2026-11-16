@@ -31,7 +31,7 @@ google-java-format = { module = "com.google.googlejavaformat:google-java-format"
 # supplies the JaCoCo plugin's `toolVersion`, via "libs.versions.jacoco".
 jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
 
-jsoup = { module = "org.jsoup:jsoup", version = "1.23.2" }
+jsoup = { module = "org.jsoup:jsoup", version = "1.24.1" }
 
 jsr305 = { module = "com.google.code.findbugs:jsr305", version = "3.0.2" }
 
