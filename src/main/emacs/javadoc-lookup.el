@@ -1,4 +1,4 @@
-;;; javadoc-lookup.el
+;;; javadoc-lookup.el  -*- lexical-binding: t; -*-
 ;;; Displays (in a separate browser window) Javadoc documentation for a Java
 ;;; package, class, method, or field, whose name is specified with completion.
 ;;; Originally jdk-goto-ref.el by Greg J. Badros -- 11/3/97.
