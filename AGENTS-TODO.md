@@ -20,24 +20,24 @@ convert.
 
 ## Checklist
 
-- [ ] Harness: optional `-Pe2e.command=...` to run an external command instead
+- [x] Harness: optional `-Pe2e.command=...` to run an external command instead
   of this implementation; document it in the README.
-- [ ] Harness: support for unreadable input files (`unreadable.txt` lists files
+- [x] Harness: support for unreadable input files (`unreadable.txt` lists files
   that the harness makes unreadable in a copy of the test case), if cheap.
 - [ ] README: language-neutral description of the invocation (working
   directory, arguments, home directory, environment), the compared outputs, and
   the normalization (including how a non-Java implementation handles the
   stack-trace normalization).
-- [ ] New test cases, file list: CRLF line endings, UTF-8 byte order mark, a
+- [x] New test cases, file list: CRLF line endings, UTF-8 byte order mark, a
   `#` that is not at the start of a line, `~` that is not expanded, a glob that
   matches a hidden file.
-- [ ] New test cases, HTML encodings: UTF-8 byte order mark, UTF-16 with a byte
+- [x] New test cases, HTML encodings: UTF-8 byte order mark, UTF-16 with a byte
   order mark, invalid UTF-8 bytes.
-- [ ] New test cases, arguments: a space in a file name, an option-like
+- [x] New test cases, arguments: a space in a file name, an option-like
   argument (`--help`), an unreadable argument file.
-- [ ] New test cases, references: `http:` in the middle of a relative href; an
+- [x] New test cases, references: `http:` in the middle of a relative href; an
   anchor that is matched by two rules; a span with two anchors.
-- [ ] New test cases, ignored prefixes: `java.base` that is a file;
+- [x] New test cases, ignored prefixes: `java.base` that is a file;
   `org.eclipse.jgit` that is a file.
 - [ ] Update the README coverage list and known-problems table.
 - [ ] `./gradlew spotlessApply build` passes; markdownlint-cli2 passes.

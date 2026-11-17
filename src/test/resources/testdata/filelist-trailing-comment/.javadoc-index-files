@@ -1,0 +1,4 @@
+# Only a line that starts with "#" is a comment.  On the line below, the "#" and the
+# text after it are part of the file name, which does not exist.
+api/index-all.html # the API documentation
+api/index-all.html

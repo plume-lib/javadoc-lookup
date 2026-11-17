@@ -1,0 +1,4 @@
+# The harness makes "api/index-all.html" unreadable (see "unreadable.txt").  The goal
+# files record that CreateJavadocIndex reports this with an uncaught exception and a
+# stack trace.
+api/index-all.html

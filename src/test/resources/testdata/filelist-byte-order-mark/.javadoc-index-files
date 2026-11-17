@@ -1,0 +1,6 @@
+﻿api/index-all.html
+# The file starts with a UTF-8 byte order mark (the bytes EF BB BF), as a file
+# saved by some Windows editors does.  CreateJavadocIndex does not strip it, so the
+# first line names a nonexistent file whose name starts with U+FEFF.  The line below
+# is the same file name, without a byte order mark.
+api/index-all.html

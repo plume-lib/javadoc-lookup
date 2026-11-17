@@ -1,0 +1,5 @@
+# CreateJavadocIndex does not expand "~" in a file name, although it reads this file
+# from the home directory.  The home directory contains "api/index-all.html", but the
+# line below names a file in a subdirectory named "~", which does not exist.
+~/api/index-all.html
+api/index-all.html
