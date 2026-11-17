@@ -1,4 +1,5 @@
 # The harness makes "api/index-all.html" unreadable (see "unreadable.txt").  The goal
 # files record that CreateJavadocIndex reports this with an uncaught exception and a
 # stack trace.
+# See https://github.com/plume-lib/javadoc-lookup/issues/446.
 api/index-all.html

@@ -11,7 +11,8 @@
 
      CreateJavadocIndex calls Jsoup.parse(file, "UTF-8").  Jsoup honors a declared charset
      only when that argument is null, so the goal file records that every non-ASCII
-     character becomes U+FFFD, the replacement character. -->
+     character becomes U+FFFD, the replacement character.
+     See https://github.com/plume-lib/javadoc-lookup/issues/437. -->
 <dl class="index">
 <dt><a href="p/Caf%E9.html" title="class in p">Café</a> - Class in p</dt>
 <dd>A class whose name contains a Latin-1 letter.</dd>

@@ -1,3 +1,4 @@
 # The argument names a directory rather than a file.  The goal file records that
 # CreateJavadocIndex reports this with an uncaught exception and a stack trace.
+# See https://github.com/plume-lib/javadoc-lookup/issues/446.
 api

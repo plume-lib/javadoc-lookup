@@ -184,23 +184,23 @@ test case has a comment in its input that says so.  The known problems are:
 
 <!-- markdownlint-disable MD013 -->
 
-| Test case | Problem |
-| --- | --- |
-| `entity-in-symbol` | Only the entities `&lt;` and `&gt;` are decoded, so a symbol can contain the literal text `&amp;` or `&nbsp;`. |
-| `code-element-in-symbol` | A `<code>` start tag that has an attribute is not stripped. |
-| `span-element-in-symbol` | A `<span>` start tag that lacks a `class` attribute is not stripped, although the matching `</span>` end tag is. |
-| `other-markup-in-symbol` | Markup other than `code` and `span` is not stripped. |
-| `charset-iso-8859-1` | The program passes `"UTF-8"` to Jsoup, which makes Jsoup ignore the charset that the document declares. |
-| `href-scheme` | The test for an external reference is case-sensitive and knows only `http:` and `https:`, so `HTTPS:`, `//`, `ftp:`, `mailto:`, and `file:` yield a nonexistent local file name. |
-| `href-missing` | An `<a>` element with no `href` attribute yields a reference to the directory that contains the index file, rather than a diagnostic. |
-| `arg-dot-slash` | The ignored prefix is not normalized, so for the argument `./api/index-all.html` the ignored prefix `file:./api/` matches none of the references, which are under `file:api/`. |
-| `at-sign-in-symbol` | Stripping an annotation leaves the space that followed it, and a symbol that is a lone `@` becomes the empty string. |
-| `at-sign-in-href` | The annotation-stripping substitution is applied to the reference as well as to the symbol, so a file name that contains `@`, letters, and a space yields a reference to a file that does not exist. |
-| `filelist-glob-no-match` | A glob that matches no file is silently ignored. |
-| `filelist-glob-in-directory-name` | A glob in a directory name is silently ignored. |
-| `filelist-glob-metacharacters` | A line is treated as a glob only if it contains `*`, so `?`, `[...]`, and `{...}` are not expanded even though `Files.newDirectoryStream` supports them. |
-| `arg-directory`, `filelist-glob-matches-directory`, `unreadable-argument`, `filelist-unreadable-entry` | Naming a directory or an unreadable file, rather than a readable file, produces an uncaught exception and a stack trace, and discards the entries that were read from the files that were processed first. |
-| `href-http-not-at-start` | The test for an external reference looks for `http:` and `https:` anywhere in the href, so a relative reference that contains either one, as in `p/Widget.html#fetch(https:)`, is not indexed. |
-| `filelist-byte-order-mark` | A byte order mark at the start of `.javadoc-index-files` is not stripped, so it becomes part of the first file name, and that file is not found. |
-| `java-base-is-file` | A directory is treated as the JDK's API documentation if it contains an entry named `java.base`, even if that entry is a file; then the directory itself is not an ignored prefix. |
-| `filelist-unreadable`, `filelist-glob-directory-unreadable`, `filelist-glob-directory-is-file` | A diagnostic that starts with `Trouble while reading file ${testcase}/.javadoc-index-files` ends with only the message of a Java exception, which can be a bare file name that does not say what went wrong, and which can name a file other than `.javadoc-index-files`. |
+| Test case | Problem | Issue |
+| --- | --- | --- |
+| `entity-in-symbol` | Only the entities `&lt;` and `&gt;` are decoded, so a symbol can contain the literal text `&amp;` or `&nbsp;`. | [#433](https://github.com/plume-lib/javadoc-lookup/issues/433) |
+| `code-element-in-symbol` | A `<code>` start tag that has an attribute is not stripped. | [#434](https://github.com/plume-lib/javadoc-lookup/issues/434) |
+| `span-element-in-symbol` | A `<span>` start tag that lacks a `class` attribute is not stripped, although the matching `</span>` end tag is. | [#435](https://github.com/plume-lib/javadoc-lookup/issues/435) |
+| `other-markup-in-symbol` | Markup other than `code` and `span` is not stripped. | [#436](https://github.com/plume-lib/javadoc-lookup/issues/436) |
+| `charset-iso-8859-1` | The program passes `"UTF-8"` to Jsoup, which makes Jsoup ignore the charset that the document declares. | [#437](https://github.com/plume-lib/javadoc-lookup/issues/437) |
+| `href-scheme` | The test for an external reference is case-sensitive and knows only `http:` and `https:`, so `HTTPS:`, `//`, `ftp:`, `mailto:`, and `file:` yield a nonexistent local file name. | [#438](https://github.com/plume-lib/javadoc-lookup/issues/438) |
+| `href-missing` | An `<a>` element with no `href` attribute yields a reference to the directory that contains the index file, rather than a diagnostic. | [#439](https://github.com/plume-lib/javadoc-lookup/issues/439) |
+| `arg-dot-slash` | The ignored prefix is not normalized, so for the argument `./api/index-all.html` the ignored prefix `file:./api/` matches none of the references, which are under `file:api/`. | [#440](https://github.com/plume-lib/javadoc-lookup/issues/440) |
+| `at-sign-in-symbol` | Stripping an annotation that precedes `[]` leaves the space that preceded the annotation, and a symbol that is a lone `@` becomes the empty string. | [#441](https://github.com/plume-lib/javadoc-lookup/issues/441) |
+| `at-sign-in-href` | The annotation-stripping substitution is applied to the reference as well as to the symbol, so a file name that contains `@`, letters, and a space yields a reference to a file that does not exist. | [#442](https://github.com/plume-lib/javadoc-lookup/issues/442) |
+| `filelist-glob-no-match` | A glob that matches no file is silently ignored. | [#443](https://github.com/plume-lib/javadoc-lookup/issues/443) |
+| `filelist-glob-in-directory-name` | A glob in a directory name is silently ignored. | [#444](https://github.com/plume-lib/javadoc-lookup/issues/444) |
+| `filelist-glob-metacharacters` | A line is treated as a glob only if it contains `*`, so `?`, `[...]`, and `{...}` are not expanded even though `Files.newDirectoryStream` supports them. | [#445](https://github.com/plume-lib/javadoc-lookup/issues/445) |
+| `arg-directory`, `filelist-glob-matches-directory`, `unreadable-argument`, `filelist-unreadable-entry` | Naming a directory or an unreadable file, rather than a readable file, produces an uncaught exception and a stack trace, and discards the entries that were read from the files that were processed first. | [#446](https://github.com/plume-lib/javadoc-lookup/issues/446) |
+| `href-http-not-at-start` | The test for an external reference looks for `http:` and `https:` anywhere in the href, so a relative reference that contains either one, as in `p/Widget.html#fetch(https:)`, is not indexed. | [#447](https://github.com/plume-lib/javadoc-lookup/issues/447) |
+| `filelist-byte-order-mark` | A byte order mark at the start of `.javadoc-index-files` is not stripped, so it becomes part of the first file name, and that file is not found. | [#448](https://github.com/plume-lib/javadoc-lookup/issues/448) |
+| `java-base-is-file` | A directory is treated as the JDK's API documentation if it contains an entry named `java.base`, even if that entry is a file; then the directory itself is not an ignored prefix. | [#449](https://github.com/plume-lib/javadoc-lookup/issues/449) |
+| `filelist-unreadable`, `filelist-glob-directory-unreadable`, `filelist-glob-directory-is-file` | A diagnostic that starts with `Trouble while reading file ${testcase}/.javadoc-index-files` ends with only the message of a Java exception, which can be a bare file name that does not say what went wrong, and which can name a file other than `.javadoc-index-files`. | [#450](https://github.com/plume-lib/javadoc-lookup/issues/450) |

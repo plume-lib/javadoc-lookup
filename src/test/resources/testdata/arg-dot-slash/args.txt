@@ -1,4 +1,5 @@
 # The argument is not a normalized file name.  The goal file records that the references
 # are normalized ("file:api/...") but the ignored prefix is not ("file:./api/"), so the
 # ignored prefix matches none of the references.
+# See https://github.com/plume-lib/javadoc-lookup/issues/440.
 ./api/index-all.html

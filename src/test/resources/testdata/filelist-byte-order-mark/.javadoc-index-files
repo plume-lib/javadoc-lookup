@@ -3,4 +3,5 @@
 # saved by some Windows editors does.  CreateJavadocIndex does not strip it, so the
 # first line names a nonexistent file whose name starts with U+FEFF.  The line below
 # is the same file name, without a byte order mark.
+# See https://github.com/plume-lib/javadoc-lookup/issues/448.
 api/index-all.html

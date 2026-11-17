@@ -1,5 +1,6 @@
 # The file "beta/index-all.html" exists but is unreadable, so CreateJavadocIndex does
 # not report "Didn't find" for it.  It fails when it reads the file, and it discards
 # the entries that it read from "alpha/index-all.html".
+# See https://github.com/plume-lib/javadoc-lookup/issues/446.
 alpha/index-all.html
 beta/index-all.html
