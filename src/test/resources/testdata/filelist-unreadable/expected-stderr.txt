@@ -1,1 +1,0 @@
-Trouble while reading file ${testcase}/.javadoc-index-files : ${testcase}/.javadoc-index-files

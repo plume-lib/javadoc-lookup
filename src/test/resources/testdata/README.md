@@ -50,7 +50,8 @@ the Java harness skips the tests on Windows.
 | `args.txt` | The command-line arguments, one per line.  Blank lines and lines that start with `#` are ignored.  In an argument, `${testcase}` is replaced by the absolute file name of the directory in which the program runs (the test case directory, or its copy as described under "Unreadable files"), which lets a test case pass an absolute file name.  Each line is trimmed of leading and trailing whitespace, and each line is one argument even if it contains spaces.  The file must list at least one argument; to run the program with no command-line arguments, omit the file, which makes the program read `.javadoc-index-files`. |
 | `.javadoc-index-files` | The list of API documentation files that the program reads when it is given no command-line arguments. |
 | `expected-stdout.txt` | Goal file for the program's standard output.  Required. |
-| `expected-stderr.txt` | Goal file for the program's standard error.  If absent, the program must write nothing to standard error. |
+| `expected-stderr.txt` | Goal file for the program's standard error.  If neither this file nor `expected-stderr-substrings.txt` exists, the program must write nothing to standard error. |
+| `expected-stderr-substrings.txt` | Goal file that specifies only part of the program's standard error; see "Partially specified standard error" below.  A test case must not have both this file and `expected-stderr.txt`. |
 | `expected-status.txt` | Goal file for the program's exit status, as a decimal number followed by a newline.  If absent, the program must exit with status 0. |
 | `unreadable.txt` | Files and directories that the harness makes unreadable before running the program, one per line, relative to the test case directory.  Blank lines and lines that start with `#` are ignored.  See below. |
 
@@ -59,9 +60,32 @@ and stub files that exist only so that git records a directory whose mere existe
 affects the program's behavior.  Some input files are deliberately not valid UTF-8
 or have unusual line endings; a harness must not modify them.
 
-The comparison of standard output and standard error is exact, after the
-normalization that is described below:  it is sensitive to whitespace, to line
-endings, and to a final newline.  The exit status is compared as a number.
+The comparison of standard output and standard error to `expected-stdout.txt` and
+`expected-stderr.txt` is exact, after the normalization that is described below:  it
+is sensitive to whitespace, to line endings, and to a final newline.  The exit status
+is compared as a number.
+
+### Partially specified standard error
+
+When some of the text of a diagnostic legitimately differs from one implementation
+to another, a test case specifies only the part that every implementation must
+produce.  Such a test case has a file `expected-stderr-substrings.txt` instead of
+`expected-stderr.txt`.  Blank lines and lines that start with `#` in the file are
+ignored, and each other line is trimmed of leading and trailing whitespace.  Each
+remaining line is a string that the program's standard error must contain, after
+normalization.  In addition, standard error must not be empty, even if the file
+lists no string.  The strings are checked independently:  they can appear in any
+order, on the same line or on different lines.
+
+For example, when an input file is unreadable, the reference implementation
+(written in Java) terminates with an uncaught exception, which it reports with a
+stack trace; another implementation would report the problem differently.  So test
+case `unreadable-argument` requires only that standard error is non-empty and
+mentions the file `api/index-all.html`, and that standard output and the exit
+status are exactly as their goal files specify.  Similarly, test case
+`filelist-unreadable` requires the program's own message `Trouble while reading
+file ${testcase}/.javadoc-index-files`, but not the text that the reference
+implementation appends to it, which is the message of a Java exception.
 
 ### Unreadable files
 
@@ -79,42 +103,25 @@ as the superuser, then the harness skips the test case.
 ## Normalization of the program's output
 
 Before comparing the program's standard output and standard error to the goal
-files, the harness makes two substitutions, so that the goal files do not depend
-on where the repository is checked out nor on the exact version of the program:
+files, the harness replaces each occurrence of the absolute file name of the
+directory in which the program ran (the test case directory, or its copy) by
+`${testcase}`, so that the goal files do not depend on where the repository is
+checked out.
 
-* Each occurrence of the absolute file name of the directory in which the program
-  ran (the test case directory, or its copy) is replaced by `${testcase}`.
-* Each maximal sequence of consecutive lines that start with a tab followed by
-  `at` and a space -- that is, each Java stack trace -- is replaced by the single
-  line `<TAB>at ...`, where `<TAB>` is a tab character.  As a regular
-  expression in multi-line mode, the harness replaces
-  `^\tat .*(\r?\n\tat .*)*` by `\tat ...`.
+### Behavior that reflects the reference implementation's HTML library
 
-### Java-specific diagnostics
+The goal files record the behavior of the reference implementation, which is
+written in Java and parses HTML with the jsoup library.  Diagnostics whose text
+depends on the implementation are only partially specified, as described above.
+Standard output, however, is always specified exactly, and some of it reflects
+jsoup:
 
-The goal files record the behavior of the Java implementation, which is the
-reference implementation.  Most diagnostics are plain text that any implementation
-can reproduce.  Some reflect Java and its libraries, however:
-
-* An uncaught exception.  When the Java implementation fails with an uncaught
-  exception, it writes a line such as
-  `Exception in thread "main" java.nio.file.NoSuchFileException: nonexistent/index-all.html`
-  followed by a stack trace, and exits with status 1.  The normalized goal file
-  for standard error therefore contains the line `<TAB>at ...`.  When a harness
-  tests an implementation in another language, and the goal file for standard
-  error contains the line `<TAB>at ...`, the harness requires only that standard
-  error is not empty; it still compares standard output and the exit status
-  exactly.  The Java harness does so when it is given `-Pe2e.command` (see
-  below).
-* The text after ` : ` in a message that starts `Trouble while reading file` is
-  the message of a Java exception, such as `Is a directory` or the bare name of
-  the file that could not be read.
-* The text of an HTML element in a diagnostic, as in test case
-  `missing-anchor`, is the element as the jsoup library serializes it.
-* HTML parsing follows the jsoup library, which is lenient:  it accepts malformed
-  HTML and non-HTML text, and it decodes input as described for test cases
-  `charset-iso-8859-1`, `utf8-byte-order-mark`, `utf16-byte-order-mark`, and
-  `invalid-utf8`.
+* HTML parsing is lenient:  it accepts malformed HTML and non-HTML text, and it
+  decodes input as described for test cases `charset-iso-8859-1`,
+  `utf8-byte-order-mark`, `utf16-byte-order-mark`, and `invalid-utf8`.
+* In the test cases that record known problems with stripping markup from a symbol
+  (see the table at the end of this file), the markup that remains in a symbol is
+  written as jsoup serializes it.
 
 ## Running the tests against another implementation
 
@@ -142,6 +149,12 @@ Run
 to overwrite the goal files with the program's current output.  Always inspect the
 resulting diff before committing it: a change in the program's output is exactly
 what these tests exist to detect.
+
+A file `expected-stderr-substrings.txt` cannot be derived from the program's output,
+so it is never overwritten; it is checked as usual, and if it fails, edit it by
+hand.  When a new test case's standard error contains text that depends on the
+implementation, such as a stack trace, replace the generated `expected-stderr.txt`
+by an `expected-stderr-substrings.txt` file.
 
 ## What the test cases cover
 

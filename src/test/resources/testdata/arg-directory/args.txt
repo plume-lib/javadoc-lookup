@@ -1,4 +1,5 @@
-# The argument names a directory rather than a file.  The goal file records that
-# CreateJavadocIndex reports this with an uncaught exception and a stack trace.
+# The argument names a directory rather than a file.  The goal files record that
+# CreateJavadocIndex writes nothing to standard output and exits with status 1.  The
+# Java implementation reports the problem with an uncaught exception and a stack trace.
 # See https://github.com/plume-lib/javadoc-lookup/issues/446.
 api

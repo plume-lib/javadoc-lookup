@@ -1,0 +1,4 @@
+# Standard error must contain each string below.  The Java implementation
+# follows the message with " : " and the message of a Java exception.
+Trouble while reading file ${testcase}/.javadoc-index-files
+api

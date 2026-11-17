@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
@@ -52,6 +53,14 @@ final class CreateJavadocIndexTest {
   /** The name of the goal file, in a test case directory, for the program's standard error. */
   private static final String STDERR_GOAL_FILE = "expected-stderr.txt";
 
+  /**
+   * The name of the file, in a test case directory, that lists strings that the program's standard
+   * error must contain. A test case has this file instead of {@link #STDERR_GOAL_FILE} when only
+   * part of the program's standard error is specified, because the rest depends on the
+   * implementation.
+   */
+  private static final String STDERR_SUBSTRINGS_FILE = "expected-stderr-substrings.txt";
+
   /** The name of the goal file, in a test case directory, for the program's exit status. */
   private static final String STATUS_GOAL_FILE = "expected-status.txt";
 
@@ -60,12 +69,6 @@ final class CreateJavadocIndexTest {
    * test makes unreadable before running the program.
    */
   private static final String UNREADABLE_FILE = "unreadable.txt";
-
-  /**
-   * The line that replaces a stack trace in the normalized output. In a goal file for standard
-   * error, it indicates that the program terminated with an uncaught exception.
-   */
-  private static final String STACK_TRACE_LINE = "\tat ...";
 
   /** How long to wait for the program to finish, in seconds. */
   private static final long TIMEOUT_SECONDS = 120;
@@ -202,7 +205,7 @@ final class CreateJavadocIndexTest {
         () ->
             checkGoal(
                 caseDir.resolve(STDOUT_GOAL_FILE), stdout, null, testCase + ": standard output"),
-        () -> checkStderrGoal(caseDir.resolve(STDERR_GOAL_FILE), stderr, testCase),
+        () -> checkStderrGoal(caseDir, stderr, testCase),
         () ->
             checkGoal(
                 caseDir.resolve(STATUS_GOAL_FILE),
@@ -285,11 +288,23 @@ final class CreateJavadocIndexTest {
     if (!Files.exists(unreadableFile)) {
       return List.of();
     }
-    List<Path> result = new ArrayList<>();
-    for (String line : Files.readAllLines(unreadableFile, UTF_8)) {
-      String fileName = line.trim();
-      if (!fileName.isEmpty() && !fileName.startsWith("#")) {
-        result.add(Path.of(fileName));
+    return readEntries(unreadableFile).stream().map(Path::of).toList();
+  }
+
+  /**
+   * Returns the lines of the given file that are neither blank nor comments, each trimmed of
+   * leading and trailing whitespace. A comment is a line that starts with {@code #}.
+   *
+   * @param file a file that lists one entry per line
+   * @return the entries that the file lists
+   * @throws IOException if the file cannot be read
+   */
+  private static List<String> readEntries(Path file) throws IOException {
+    List<String> result = new ArrayList<>();
+    for (String line : Files.readAllLines(file, UTF_8)) {
+      String entry = line.trim();
+      if (!entry.isEmpty() && !entry.startsWith("#")) {
+        result.add(entry);
       }
     }
     return result;
@@ -333,11 +348,8 @@ final class CreateJavadocIndexTest {
       return List.of();
     }
     List<String> result = new ArrayList<>();
-    for (String line : Files.readAllLines(argsFile, UTF_8)) {
-      String arg = line.trim();
-      if (!arg.isEmpty() && !arg.startsWith("#")) {
-        result.add(arg.replace("${testcase}", caseDir.toString()));
-      }
+    for (String arg : readEntries(argsFile)) {
+      result.add(arg.replace("${testcase}", caseDir.toString()));
     }
     // Running the program with no command-line arguments makes it read ".javadoc-index-files",
     // which is not what a file that lists no argument asks for.
@@ -352,11 +364,10 @@ final class CreateJavadocIndexTest {
   }
 
   /**
-   * Makes the program's output independent of where the repository is checked out and of the line
-   * numbers in stack traces. The result still depends on the behavior of the program and of its
-   * dependencies; for example, some goal files contain text that jsoup produced, so upgrading jsoup
-   * may require the goal files to be updated. That is intended: a goal file changes exactly when
-   * the program's user-visible output changes.
+   * Makes the program's output independent of where the repository is checked out. The result still
+   * depends on the behavior of the program and of its dependencies; for example, some goal files
+   * contain text that jsoup produced, so upgrading jsoup may require the goal files to be updated.
+   * That is intended: a goal file changes exactly when the program's user-visible output changes.
    *
    * @param output the program's standard output or standard error
    * @param caseDir the directory that was the program's current directory: the test case directory
@@ -366,36 +377,49 @@ final class CreateJavadocIndexTest {
   private static String normalize(String output, Path caseDir) {
     // CreateJavadocIndex prints an absolute file name only when it constructs one from the home
     // directory, which this test set to the test case directory.
-    String result = output.replace(caseDir.toString(), "${testcase}");
-    // Replace each stack trace by a single line, because a stack trace contains line numbers
-    // that change whenever CreateJavadocIndex or one of its dependencies is edited.
-    result = result.replaceAll("(?m)^\tat .*(\r?\n\tat .*)*", STACK_TRACE_LINE);
-    return result;
+    return output.replace(caseDir.toString(), "${testcase}");
   }
 
   /**
-   * Compares the program's standard error to its goal file, like {@link #checkGoal}. However, when
-   * the tests run an implementation other than this one and the goal file records an uncaught Java
-   * exception, the text of that exception is specific to Java, so the comparison requires only that
-   * standard error is not empty.
+   * Checks the program's standard error. If the test case has a file {@link
+   * #STDERR_SUBSTRINGS_FILE}, standard error must be non-empty and must contain each string that
+   * the file lists. Otherwise, standard error is compared to the goal file {@link
+   * #STDERR_GOAL_FILE}, as by {@link #checkGoal}.
    *
-   * @param goalFile the goal file for standard error
+   * <p>When {@link #updateGoals} is true, a {@link #STDERR_SUBSTRINGS_FILE} file is still checked
+   * rather than overwritten, because the strings in it cannot be derived from the program's output.
+   *
+   * @param caseDir a test case directory
    * @param actual the program's standard error
    * @param testCase the name of the test case; used for diagnostics
-   * @throws IOException if the goal file cannot be read or written
+   * @throws IOException if a goal file cannot be read or written
    */
-  private static void checkStderrGoal(Path goalFile, String actual, String testCase)
+  private static void checkStderrGoal(Path caseDir, String actual, String testCase)
       throws IOException {
     String description = testCase + ": standard error";
-    if (!externalCommand.isEmpty()
-        && Files.exists(goalFile)
-        && Files.readAllLines(goalFile, UTF_8).contains(STACK_TRACE_LINE)) {
-      assertFalse(
-          actual.isEmpty(),
-          description + " is empty, but goal file " + goalFile + " records an uncaught exception");
+    Path goalFile = caseDir.resolve(STDERR_GOAL_FILE);
+    Path substringsFile = caseDir.resolve(STDERR_SUBSTRINGS_FILE);
+    if (!Files.exists(substringsFile)) {
+      checkGoal(goalFile, actual, "", description);
       return;
     }
-    checkGoal(goalFile, actual, "", description);
+    assertFalse(
+        Files.exists(goalFile),
+        testCase + " has both " + STDERR_GOAL_FILE + " and " + STDERR_SUBSTRINGS_FILE);
+    assertFalse(
+        actual.isEmpty(),
+        description + " is empty, but goal file " + substringsFile + " requires output");
+    List<String> missing =
+        readEntries(substringsFile).stream().filter(s -> !actual.contains(s)).toList();
+    assertTrue(
+        missing.isEmpty(),
+        description
+            + " lacks "
+            + missing
+            + ", which goal file "
+            + substringsFile
+            + " requires.  Standard error is:\n"
+            + actual);
   }
 
   /**
