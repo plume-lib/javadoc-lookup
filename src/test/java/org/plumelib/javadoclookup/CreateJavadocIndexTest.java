@@ -213,7 +213,7 @@ final class CreateJavadocIndexTest {
 
   /**
    * Runs CreateJavadocIndex in a subprocess, with the given directory as its current directory and
-   * its home directory.
+   * its home directory, and returns its exit status.
    *
    * @param testCase the name of a subdirectory of the test data directory
    * @param runDir the directory in which to run the program: the test case directory or a copy of
@@ -276,8 +276,8 @@ final class CreateJavadocIndexTest {
    * Returns the files that a test case makes unreadable: the lines of the given file that are
    * neither blank nor comments. If the file does not exist, returns the empty list.
    *
-   * @param unreadableFile a file that lists file names relative to the test case directory, one
-   *     per line
+   * @param unreadableFile a file that lists file names relative to the test case directory, one per
+   *     line
    * @return the file names that the file lists
    * @throws IOException if the file cannot be read
    */
@@ -316,13 +316,13 @@ final class CreateJavadocIndexTest {
 
   /**
    * Returns the command-line arguments for a test case: the lines of the given file that are
-   * neither blank nor comments. In each argument, {@code ${testcase}} is replaced by the test case
-   * directory, which lets a test case pass an absolute file name. If the file does not exist,
-   * returns the empty list, which makes CreateJavadocIndex read {@code ~/.javadoc-index-files}
-   * instead.
+   * neither blank nor comments. In each argument, {@code ${testcase}} is replaced by the directory
+   * in which the program runs, which lets a test case pass an absolute file name. If the file does
+   * not exist, returns the empty list, which makes CreateJavadocIndex read {@code
+   * ~/.javadoc-index-files} instead.
    *
    * @param argsFile the file that lists the command-line arguments, one per line
-   * @param caseDir the test case directory
+   * @param caseDir the directory in which the program runs: the test case directory or a copy of it
    * @return the command-line arguments
    * @throws IOException if the file cannot be read
    * @throws AssertionError if the file exists but lists no argument, which is most likely a typo
@@ -359,8 +359,8 @@ final class CreateJavadocIndexTest {
    * the program's user-visible output changes.
    *
    * @param output the program's standard output or standard error
-   * @param caseDir the directory that was the program's current directory: the test case
-   *     directory or a copy of it
+   * @param caseDir the directory that was the program's current directory: the test case directory
+   *     or a copy of it
    * @return the output, with machine-specific text replaced
    */
   private static String normalize(String output, Path caseDir) {
