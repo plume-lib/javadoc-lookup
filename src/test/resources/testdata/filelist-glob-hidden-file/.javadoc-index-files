@@ -1,0 +1,3 @@
+# In a glob, "*" matches a file name that starts with ".", unlike in a Unix shell.
+# So this glob matches both "api/index-all.html" and "api/.index-hidden.html".
+api/*.html

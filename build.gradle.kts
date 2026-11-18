@@ -186,6 +186,10 @@ tasks.withType<Test>().configureEach {
   // current output.  Always inspect the resulting diff before committing it.
   systemProperty("updateGoals", providers.systemProperty("updateGoals").getOrElse("false"))
 
+  // Run `./gradlew test -Pe2e.command="..."` to run the end-to-end tests against a different
+  // implementation of CreateJavadocIndex.  See src/test/resources/testdata/README.md.
+  systemProperty("e2e.command", providers.gradleProperty("e2e.command").getOrElse(""))
+
   useJUnitPlatform {
     includeEngines("junit-jupiter")
     excludeEngines("junit-vintage")

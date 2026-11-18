@@ -1,6 +1,7 @@
 # This glob matches the file "api/index-all.html" and also the directory "api/p".
 # CreateJavadocIndex sorts the matches, so it reads "api/index-all.html" first and then
-# fails on "api/p".  The goal file records that the failure is an uncaught exception, and
-# that the entries that were read from "api/index-all.html" are discarded rather than
+# fails on "api/p".  The goal files record that it exits with status 1 (the Java
+# implementation throws an uncaught exception), and that the entries that were read from "api/index-all.html" are discarded rather than
 # printed, because CreateJavadocIndex prints nothing until it has read every file.
+# See https://github.com/plume-lib/javadoc-lookup/issues/446.
 api/*

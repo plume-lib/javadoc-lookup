@@ -1,0 +1,12 @@
+;; -*- lexical-binding: t; -*-
+;; For use by Emacs function javadoc-lookup.
+;; Created by CreateJavadocIndex.
+;; arguments: api/index-all.html
+(setq javadoc-html-refs '(
+ ("Widget" "file:api/p/Widget.html")
+ ("Color" "file:api/java.desktop/java/awt/Color.html")
+))
+
+(setq javadoc-ignored-prefixes (list
+  (concat "^" (regexp-quote "file:api/java.desktop/"))
+))

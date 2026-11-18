@@ -1,0 +1,3 @@
+# Standard error must not be empty.  Its text is specific to the implementation:  the
+# Java implementation reports this problem with an uncaught exception and a stack trace,
+# whose message does not name the directory.

@@ -1,0 +1,4 @@
+# Standard error must contain each string below.  The rest of standard error is
+# specific to the implementation:  the Java implementation reports this problem with an
+# uncaught exception and a stack trace.
+--help

@@ -1,4 +1,5 @@
 # The directory part of this glob, "notes.txt", exists but is not a directory.
+# See https://github.com/plume-lib/javadoc-lookup/issues/450.
 notes.txt/index-*.html
 # CreateJavadocIndex exits before it reads the line below.
 api/index-all.html

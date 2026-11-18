@@ -1,0 +1,4 @@
+# CreateJavadocIndex has no command-line options.  It treats every argument, even one
+# that looks like an option, as the name of a file to read.
+--help
+api/index-all.html

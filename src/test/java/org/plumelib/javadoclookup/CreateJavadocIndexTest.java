@@ -3,13 +3,18 @@ package org.plumelib.javadoclookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +34,10 @@ import org.junit.jupiter.params.provider.MethodSource;
  * with the test case directory as both its current directory and its home directory, so all the
  * file names in the goal files are relative to the test case directory. See {@code
  * src/test/resources/testdata/README.md} for the layout of a test case directory.
+ *
+ * <p>By default, the tests run this implementation of CreateJavadocIndex. To run a different
+ * implementation, possibly written in a different language, pass the command that runs it: {@code
+ * ./gradlew test -Pe2e.command="python3 /path/to/create_javadoc_index.py"}.
  */
 final class CreateJavadocIndexTest {
 
@@ -44,8 +53,22 @@ final class CreateJavadocIndexTest {
   /** The name of the goal file, in a test case directory, for the program's standard error. */
   private static final String STDERR_GOAL_FILE = "expected-stderr.txt";
 
+  /**
+   * The name of the file, in a test case directory, that lists strings that the program's standard
+   * error must contain. A test case has this file instead of {@link #STDERR_GOAL_FILE} when only
+   * part of the program's standard error is specified, because the rest depends on the
+   * implementation.
+   */
+  private static final String STDERR_SUBSTRINGS_FILE = "expected-stderr-substrings.txt";
+
   /** The name of the goal file, in a test case directory, for the program's exit status. */
   private static final String STATUS_GOAL_FILE = "expected-status.txt";
+
+  /**
+   * The name of the file, in a test case directory, that lists the files and directories that the
+   * test makes unreadable before running the program.
+   */
+  private static final String UNREADABLE_FILE = "unreadable.txt";
 
   /** How long to wait for the program to finish, in seconds. */
   private static final long TIMEOUT_SECONDS = 120;
@@ -62,6 +85,16 @@ final class CreateJavadocIndexTest {
    * two. Set by {@code ./gradlew test -DupdateGoals=true}.
    */
   private static final boolean updateGoals = Boolean.getBoolean("updateGoals");
+
+  /**
+   * The words of the command that runs an implementation of CreateJavadocIndex other than this one,
+   * or the empty list to run this implementation. Set by {@code ./gradlew test
+   * -Pe2e.command="..."}; the value is split at whitespace, and quoting is not supported.
+   */
+  private static final List<String> externalCommand =
+      Arrays.stream(System.getProperty("e2e.command", "").trim().split("\\s+"))
+          .filter(word -> !word.isEmpty())
+          .toList();
 
   /**
    * Returns the value of the given system property. {@code build.gradle.kts} sets every system
@@ -125,51 +158,45 @@ final class CreateJavadocIndexTest {
     // The goal files spell file names in the Unix style, with "/" as the separator.
     assumeTrue(File.separatorChar == '/', "The goal files use Unix file name syntax.");
 
+    if (updateGoals && !externalCommand.isEmpty()) {
+      throw new Error("Do not overwrite the goal files with the output of another implementation.");
+    }
+
     Path caseDir = testdataDir().resolve(testCase);
     Path stdoutFile = tempDir.resolve("stdout.txt");
     Path stderrFile = tempDir.resolve("stderr.txt");
 
-    List<String> command = new ArrayList<>();
-    command.add(Path.of(requiredProperty("java.home"), "bin", "java").toString());
-    // With no command-line arguments, CreateJavadocIndex reads ~/.javadoc-index-files, so make
-    // the test case directory be the home directory.
-    command.add("-Duser.home=" + caseDir);
-    // Make the output encoding independent of the encoding of the terminal that runs the tests.
-    command.add("-Dfile.encoding=UTF-8");
-    command.add("-Dstdout.encoding=UTF-8");
-    command.add("-Dstderr.encoding=UTF-8");
-    // Measure the coverage of the program, which the JaCoCo agent in the test JVM does not
-    // observe because the program runs in a subprocess.  See build.gradle.kts.
-    command.add(
-        "-javaagent:"
-            + requiredProperty("jacocoSubprocessAgentJar")
-            + "=destfile="
-            + Path.of(requiredProperty("jacocoSubprocessDir"), testCase + ".exec"));
-    command.add("-cp");
-    command.add(requiredProperty("mainRuntimeClasspath"));
-    command.add(CreateJavadocIndex.class.getName());
-    command.addAll(readArgs(caseDir.resolve(ARGS_FILE), caseDir));
-
-    ProcessBuilder processBuilder =
-        new ProcessBuilder(command)
-            .directory(caseDir.toFile())
-            .redirectOutput(stdoutFile.toFile())
-            .redirectError(stderrFile.toFile());
-    // The java launcher writes a line such as "Picked up JAVA_TOOL_OPTIONS: ..." to standard
-    // error if any of these environment variables is set, which would differ from the goal file.
-    // Removing them also prevents them from changing the program's behavior.
-    @Modifiable Map<String, String> env = processBuilder.environment();
-    env.keySet().removeAll(JVM_OPTIONS_ENV_VARS);
-    Process process = processBuilder.start();
-    if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-      process.destroyForcibly();
-      throw new AssertionError(
-          testCase + ": the program did not finish within " + TIMEOUT_SECONDS + " seconds.");
+    // The directory in which the program runs.  It is the test case directory itself, unless the
+    // test case makes some files unreadable:  then it is a copy, so that the test never changes
+    // the permissions of a file in the source tree.
+    Path runDir = caseDir;
+    List<Path> unreadable = readUnreadable(caseDir.resolve(UNREADABLE_FILE));
+    if (!unreadable.isEmpty()) {
+      runDir = tempDir.resolve(testCase);
+      copyDirectory(caseDir, runDir);
     }
-    int status = process.exitValue();
 
-    String stdout = normalize(Files.readString(stdoutFile, UTF_8), caseDir);
-    String stderr = normalize(Files.readString(stderrFile, UTF_8), caseDir);
+    int status;
+    try {
+      for (Path path : unreadable) {
+        runDir.resolve(path).toFile().setReadable(false, false);
+      }
+      for (Path path : unreadable) {
+        // A process that runs as the superuser can read any file.
+        assumeTrue(
+            !Files.isReadable(runDir.resolve(path)),
+            "This process can read a file that it has made unreadable: " + path);
+      }
+      status = runProgram(testCase, runDir, stdoutFile, stderrFile);
+    } finally {
+      // Make the files readable again, so that the temporary directory can be deleted.
+      for (Path path : unreadable) {
+        runDir.resolve(path).toFile().setReadable(true, false);
+      }
+    }
+
+    String stdout = normalize(Files.readString(stdoutFile, UTF_8), runDir);
+    String stderr = normalize(Files.readString(stderrFile, UTF_8), runDir);
 
     // Check all three goal files even if the first differs.  When the program fails unexpectedly,
     // its standard output differs too, and the stack trace on standard error is what explains the
@@ -178,8 +205,7 @@ final class CreateJavadocIndexTest {
         () ->
             checkGoal(
                 caseDir.resolve(STDOUT_GOAL_FILE), stdout, null, testCase + ": standard output"),
-        () ->
-            checkGoal(caseDir.resolve(STDERR_GOAL_FILE), stderr, "", testCase + ": standard error"),
+        () -> checkStderrGoal(caseDir, stderr, testCase),
         () ->
             checkGoal(
                 caseDir.resolve(STATUS_GOAL_FILE),
@@ -189,14 +215,129 @@ final class CreateJavadocIndexTest {
   }
 
   /**
+   * Runs CreateJavadocIndex in a subprocess, with the given directory as its current directory and
+   * its home directory, and returns its exit status.
+   *
+   * @param testCase the name of a subdirectory of the test data directory
+   * @param runDir the directory in which to run the program: the test case directory or a copy of
+   *     it
+   * @param stdoutFile the file to which to write the program's standard output
+   * @param stderrFile the file to which to write the program's standard error
+   * @return the program's exit status
+   * @throws IOException if the program cannot be started or its arguments cannot be read
+   * @throws InterruptedException if waiting for the program is interrupted
+   */
+  private static int runProgram(String testCase, Path runDir, Path stdoutFile, Path stderrFile)
+      throws IOException, InterruptedException {
+    List<String> command = new ArrayList<>();
+    if (externalCommand.isEmpty()) {
+      command.add(Path.of(requiredProperty("java.home"), "bin", "java").toString());
+      // With no command-line arguments, CreateJavadocIndex reads ~/.javadoc-index-files, so make
+      // the test case directory be the home directory.  Java ignores the HOME environment
+      // variable, which is set below for other implementations.
+      command.add("-Duser.home=" + runDir);
+      // Make the output encoding independent of the encoding of the terminal that runs the tests.
+      command.add("-Dfile.encoding=UTF-8");
+      command.add("-Dstdout.encoding=UTF-8");
+      command.add("-Dstderr.encoding=UTF-8");
+      // Measure the coverage of the program, which the JaCoCo agent in the test JVM does not
+      // observe because the program runs in a subprocess.  See build.gradle.kts.
+      command.add(
+          "-javaagent:"
+              + requiredProperty("jacocoSubprocessAgentJar")
+              + "=destfile="
+              + Path.of(requiredProperty("jacocoSubprocessDir"), testCase + ".exec"));
+      command.add("-cp");
+      command.add(requiredProperty("mainRuntimeClasspath"));
+      command.add(CreateJavadocIndex.class.getName());
+    } else {
+      command.addAll(externalCommand);
+    }
+    command.addAll(readArgs(runDir.resolve(ARGS_FILE), runDir));
+
+    ProcessBuilder processBuilder =
+        new ProcessBuilder(command)
+            .directory(runDir.toFile())
+            .redirectOutput(stdoutFile.toFile())
+            .redirectError(stderrFile.toFile());
+    @Modifiable Map<String, String> env = processBuilder.environment();
+    env.put("HOME", runDir.toString());
+    // The java launcher writes a line such as "Picked up JAVA_TOOL_OPTIONS: ..." to standard
+    // error if any of these environment variables is set, which would differ from the goal file.
+    // Removing them also prevents them from changing the program's behavior.
+    env.keySet().removeAll(JVM_OPTIONS_ENV_VARS);
+    Process process = processBuilder.start();
+    if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+      process.destroyForcibly();
+      throw new AssertionError(
+          testCase + ": the program did not finish within " + TIMEOUT_SECONDS + " seconds.");
+    }
+    return process.exitValue();
+  }
+
+  /**
+   * Returns the files that a test case makes unreadable: the lines of the given file that are
+   * neither blank nor comments. If the file does not exist, returns the empty list.
+   *
+   * @param unreadableFile a file that lists file names relative to the test case directory, one per
+   *     line
+   * @return the file names that the file lists
+   * @throws IOException if the file cannot be read
+   */
+  private static List<Path> readUnreadable(Path unreadableFile) throws IOException {
+    if (!Files.exists(unreadableFile)) {
+      return List.of();
+    }
+    return readEntries(unreadableFile).stream().map(Path::of).toList();
+  }
+
+  /**
+   * Returns the lines of the given file that are neither blank nor comments, each trimmed of
+   * leading and trailing whitespace. A comment is a line that starts with {@code #}.
+   *
+   * @param file a file that lists one entry per line
+   * @return the entries that the file lists
+   * @throws IOException if the file cannot be read
+   */
+  private static List<String> readEntries(Path file) throws IOException {
+    List<String> result = new ArrayList<>();
+    for (String line : Files.readAllLines(file, UTF_8)) {
+      String entry = line.trim();
+      if (!entry.isEmpty() && !entry.startsWith("#")) {
+        result.add(entry);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Copies a directory and everything in it. Symbolic links are copied as links.
+   *
+   * @param source the directory to copy
+   * @param target where to create the copy; must not exist
+   * @throws IOException if a file cannot be read or written
+   */
+  private static void copyDirectory(Path source, Path target) throws IOException {
+    try (Stream<Path> paths = Files.walk(source)) {
+      for (Path path : paths.toList()) {
+        Files.copy(
+            path,
+            target.resolve(source.relativize(path).toString()),
+            StandardCopyOption.COPY_ATTRIBUTES,
+            LinkOption.NOFOLLOW_LINKS);
+      }
+    }
+  }
+
+  /**
    * Returns the command-line arguments for a test case: the lines of the given file that are
-   * neither blank nor comments. In each argument, {@code ${testcase}} is replaced by the test case
-   * directory, which lets a test case pass an absolute file name. If the file does not exist,
-   * returns the empty list, which makes CreateJavadocIndex read {@code ~/.javadoc-index-files}
-   * instead.
+   * neither blank nor comments. In each argument, {@code ${testcase}} is replaced by the directory
+   * in which the program runs, which lets a test case pass an absolute file name. If the file does
+   * not exist, returns the empty list, which makes CreateJavadocIndex read {@code
+   * ~/.javadoc-index-files} instead.
    *
    * @param argsFile the file that lists the command-line arguments, one per line
-   * @param caseDir the test case directory
+   * @param caseDir the directory in which the program runs: the test case directory or a copy of it
    * @return the command-line arguments
    * @throws IOException if the file cannot be read
    * @throws AssertionError if the file exists but lists no argument, which is most likely a typo
@@ -207,11 +348,8 @@ final class CreateJavadocIndexTest {
       return List.of();
     }
     List<String> result = new ArrayList<>();
-    for (String line : Files.readAllLines(argsFile, UTF_8)) {
-      String arg = line.trim();
-      if (!arg.isEmpty() && !arg.startsWith("#")) {
-        result.add(arg.replace("${testcase}", caseDir.toString()));
-      }
+    for (String arg : readEntries(argsFile)) {
+      result.add(arg.replace("${testcase}", caseDir.toString()));
     }
     // Running the program with no command-line arguments makes it read ".javadoc-index-files",
     // which is not what a file that lists no argument asks for.
@@ -226,24 +364,62 @@ final class CreateJavadocIndexTest {
   }
 
   /**
-   * Makes the program's output independent of where the repository is checked out and of the line
-   * numbers in stack traces. The result still depends on the behavior of the program and of its
-   * dependencies; for example, some goal files contain text that jsoup produced, so upgrading jsoup
-   * may require the goal files to be updated. That is intended: a goal file changes exactly when
-   * the program's user-visible output changes.
+   * Makes the program's output independent of where the repository is checked out. The result still
+   * depends on the behavior of the program and of its dependencies; for example, some goal files
+   * contain text that jsoup produced, so upgrading jsoup may require the goal files to be updated.
+   * That is intended: a goal file changes exactly when the program's user-visible output changes.
    *
    * @param output the program's standard output or standard error
-   * @param caseDir the test case directory, which was the program's current directory
+   * @param caseDir the directory that was the program's current directory: the test case directory
+   *     or a copy of it
    * @return the output, with machine-specific text replaced
    */
   private static String normalize(String output, Path caseDir) {
     // CreateJavadocIndex prints an absolute file name only when it constructs one from the home
     // directory, which this test set to the test case directory.
-    String result = output.replace(caseDir.toString(), "${testcase}");
-    // Replace each stack trace by a single line, because a stack trace contains line numbers
-    // that change whenever CreateJavadocIndex or one of its dependencies is edited.
-    result = result.replaceAll("(?m)^\tat .*(\r?\n\tat .*)*", "\tat ...");
-    return result;
+    return output.replace(caseDir.toString(), "${testcase}");
+  }
+
+  /**
+   * Checks the program's standard error. If the test case has a file {@link
+   * #STDERR_SUBSTRINGS_FILE}, standard error must be non-empty and must contain each string that
+   * the file lists. Otherwise, standard error is compared to the goal file {@link
+   * #STDERR_GOAL_FILE}, as by {@link #checkGoal}.
+   *
+   * <p>When {@link #updateGoals} is true, a {@link #STDERR_SUBSTRINGS_FILE} file is still checked
+   * rather than overwritten, because the strings in it cannot be derived from the program's output.
+   *
+   * @param caseDir a test case directory
+   * @param actual the program's standard error
+   * @param testCase the name of the test case; used for diagnostics
+   * @throws IOException if a goal file cannot be read or written
+   */
+  private static void checkStderrGoal(Path caseDir, String actual, String testCase)
+      throws IOException {
+    String description = testCase + ": standard error";
+    Path goalFile = caseDir.resolve(STDERR_GOAL_FILE);
+    Path substringsFile = caseDir.resolve(STDERR_SUBSTRINGS_FILE);
+    if (!Files.exists(substringsFile)) {
+      checkGoal(goalFile, actual, "", description);
+      return;
+    }
+    assertFalse(
+        Files.exists(goalFile),
+        testCase + " has both " + STDERR_GOAL_FILE + " and " + STDERR_SUBSTRINGS_FILE);
+    assertFalse(
+        actual.isEmpty(),
+        description + " is empty, but goal file " + substringsFile + " requires output");
+    List<String> missing =
+        readEntries(substringsFile).stream().filter(s -> !actual.contains(s)).toList();
+    assertTrue(
+        missing.isEmpty(),
+        description
+            + " lacks "
+            + missing
+            + ", which goal file "
+            + substringsFile
+            + " requires.  Standard error is:\n"
+            + actual);
   }
 
   /**

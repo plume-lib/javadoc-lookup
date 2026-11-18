@@ -2,4 +2,5 @@
 # CreateJavadocIndex reports a glob whose directory does not exist (see test case
 # "filelist-missing-directory"), but the goal file records that it says nothing about a
 # glob that matches no file.
+# See https://github.com/plume-lib/javadoc-lookup/issues/443.
 api/index-*.html

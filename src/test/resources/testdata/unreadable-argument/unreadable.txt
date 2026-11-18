@@ -1,0 +1,2 @@
+# The harness makes these files unreadable before running CreateJavadocIndex.
+api/index-all.html

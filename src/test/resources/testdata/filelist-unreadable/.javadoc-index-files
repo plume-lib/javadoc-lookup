@@ -1,0 +1,4 @@
+# The harness makes this file unreadable (see "unreadable.txt"), so CreateJavadocIndex
+# cannot read the line below.
+# See https://github.com/plume-lib/javadoc-lookup/issues/450.
+api/index-all.html

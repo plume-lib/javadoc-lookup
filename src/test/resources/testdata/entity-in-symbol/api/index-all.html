@@ -5,7 +5,8 @@
 <!-- CreateJavadocIndex converts the HTML entities "&amp;lt;" and "&amp;gt;" to "<" and ">".
      This file exercises the other HTML entities that javadoc writes.  The goal file
      records that they are not decoded, so a symbol in the Emacs Lisp output can contain
-     the literal text "&amp;amp;" or "&amp;nbsp;", which no user will ever type. -->
+     the literal text "&amp;amp;" or "&amp;nbsp;", which no user will ever type.
+     See https://github.com/plume-lib/javadoc-lookup/issues/433. -->
 <dl class="index">
 <dt><a href="p/Widget.html#copy(java.lang.Comparable)" class="member-name-link">copy(Comparable&lt;T&gt; &amp; Serializable)</a> - Method in class p.Widget</dt>
 <dd>An intersection type contains an ampersand, which javadoc writes as an entity.</dd>

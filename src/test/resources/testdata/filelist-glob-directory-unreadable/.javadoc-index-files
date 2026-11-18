@@ -1,0 +1,3 @@
+# The directory "api" exists but is unreadable, so its entries cannot be listed.
+# See https://github.com/plume-lib/javadoc-lookup/issues/450.
+api/index-*.html
