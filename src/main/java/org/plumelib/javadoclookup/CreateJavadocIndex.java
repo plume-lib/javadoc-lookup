@@ -204,7 +204,6 @@ public final class CreateJavadocIndex {
       try (DirectoryStream<Path> stream = Files.newDirectoryStream(ignoredPrefix)) {
         for (Path file : stream) {
           if (Files.isDirectory(file)) {
-            @SuppressWarnings("nullness:dereference.of.nullable") // iterating, cannot be null
             String name = file.getFileName().toString();
             if (name.startsWith("java.") || name.startsWith("jdk.")) {
               ignoredPrefixes.add("file:" + file);
